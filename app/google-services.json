@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675190792491",
+    "project_id": "focus-48ac3",
+    "storage_bucket": "focus-48ac3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675190792491:android:861d746801f8ba0d2d256e",
+        "android_client_info": {
+          "package_name": "com.hlasoftware.focus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDXJtdi0_VsaAyAygNFQSDjCe9oSAC4Y0k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
