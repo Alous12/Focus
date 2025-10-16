@@ -10,7 +10,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FocusTheme {
+            // Force dark theme
+            FocusTheme(darkTheme = true) {
                 AppNavigation()
             }
         }
