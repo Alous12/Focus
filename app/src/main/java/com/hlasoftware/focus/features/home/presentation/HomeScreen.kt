@@ -25,6 +25,9 @@ import com.hlasoftware.focus.ui.theme.IndicatorClass
 import com.hlasoftware.focus.ui.theme.IndicatorMeeting
 import com.hlasoftware.focus.ui.theme.IndicatorTask
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +110,10 @@ fun HomeScreen(
 
 @Composable
 fun DateSelector() {
+    val currentDate = LocalDate.now()
+    val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
+    val formattedDate = currentDate.format(formatter).replaceFirstChar { it.titlecase(Locale.getDefault()) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -119,7 +126,7 @@ fun DateSelector() {
         IconButton(onClick = { /* TODO */ }) {
             Icon(Icons.Default.ArrowBackIos, contentDescription = "Día anterior", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
-        Text("Martes, abr 15", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
+        Text(formattedDate, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
         IconButton(onClick = { /* TODO */ }) {
             Icon(Icons.Default.ArrowForwardIos, contentDescription = "Día siguiente", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
