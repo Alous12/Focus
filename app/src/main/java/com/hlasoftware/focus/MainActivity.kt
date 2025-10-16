@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                         }
                     } else {
                         setContent {
-                            FocusTheme {
+                            FocusTheme(darkTheme = true) {
                                 AppNavigation()
                             }
                         }
@@ -42,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     Log.d("FirebaseConfig", "Error al obtener la configuración de Firebase")
                     setContent {
-                        FocusTheme {
+                        FocusTheme(darkTheme = true) {
                             AppNavigation()
                         }
                     }
