@@ -37,9 +37,11 @@ fun HomeScreen(
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     var selectedBottomNavItem by remember { mutableStateOf(BottomNavItem.Home) }
+    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    LaunchedEffect(userId) {
-        homeViewModel.loadHome(userId)
+    // Este efecto se ejecutará cada vez que `selectedDate` o `userId` cambien.
+    LaunchedEffect(userId, selectedDate) {
+        homeViewModel.loadHome(userId, selectedDate)
     }
 
     Scaffold(
@@ -66,7 +68,11 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            DateSelector()
+            DateSelector(
+                currentDate = selectedDate,
+                onPreviousDay = { selectedDate = selectedDate.minusDays(1) },
+                onNextDay = { selectedDate = selectedDate.plusDays(1) }
+            )
             Spacer(modifier = Modifier.height(16.dp))
 
             when (uiState) {
@@ -84,7 +90,7 @@ fun HomeScreen(
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No hay actividades próximas.", color = MaterialTheme.colorScheme.onBackground)
+                            Text("No hay actividades para este día.", color = MaterialTheme.colorScheme.onBackground)
                         }
                     } else {
                         ActivitiesList(
@@ -109,8 +115,11 @@ fun HomeScreen(
 }
 
 @Composable
-fun DateSelector() {
-    val currentDate = LocalDate.now()
+fun DateSelector(
+    currentDate: LocalDate,
+    onPreviousDay: () -> Unit,
+    onNextDay: () -> Unit
+) {
     val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
     val formattedDate = currentDate.format(formatter).replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
@@ -123,11 +132,11 @@ fun DateSelector() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { /* TODO */ }) {
+        IconButton(onClick = onPreviousDay) {
             Icon(Icons.Default.ArrowBackIos, contentDescription = "Día anterior", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
         Text(formattedDate, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
-        IconButton(onClick = { /* TODO */ }) {
+        IconButton(onClick = onNextDay) {
             Icon(Icons.Default.ArrowForwardIos, contentDescription = "Día siguiente", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }

@@ -7,18 +7,33 @@ import com.hlasoftware.focus.features.home.domain.repository.IHomeRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
+import java.time.LocalDate
 
 class HomeRepository : IHomeRepository {
 
-    override suspend fun getHomeData(userId: String): HomeModel {
-        delay(500)
+    // Datos de ejemplo con fechas
+    private val mockActivities = listOf(
+        // Hoy
+        ActivityModel("1", "Clase de Física", "14:00 - 15:00", ActivityType.CLASS, LocalDate.now()),
+        ActivityModel("2", "Tarea de Matemáticas", "14:00 - 15:00", ActivityType.TASK, LocalDate.now()),
+        ActivityModel("3", "Reunión Grupal", "14:00 - 15:00", ActivityType.MEETING, LocalDate.now()),
 
-        val activities = listOf(
-            ActivityModel("1", "Clase de Matemáticas", "08:00 - 09:30", ActivityType.CLASS),
-            ActivityModel("2", "Entrega de Proyecto", "10:00 - 11:00", ActivityType.TASK),
-            ActivityModel("3", "Reunión con Tutor", "12:00 - 12:30", ActivityType.MEETING)
-        )
+        // Mañana
+        ActivityModel("4", "Examen de Cálculo", "09:00 - 11:00", ActivityType.CLASS, LocalDate.now().plusDays(1)),
+        ActivityModel("5", "Llamada con el equipo", "16:00 - 16:30", ActivityType.MEETING, LocalDate.now().plusDays(1)),
 
-        return HomeModel(upcomingActivities = activities)
+        // Ayer
+        ActivityModel("6", "Entrega de Ensayo", "Todo el día", ActivityType.TASK, LocalDate.now().minusDays(1))
+    )
+
+    override suspend fun getHomeData(userId: String, date: LocalDate): HomeModel {
+        return withContext(Dispatchers.IO) {
+            delay(500) // Simular latencia de red
+
+            // Filtrar actividades por la fecha seleccionada
+            val filteredActivities = mockActivities.filter { it.date == date }
+
+            HomeModel(upcomingActivities = filteredActivities)
+        }
     }
 }
