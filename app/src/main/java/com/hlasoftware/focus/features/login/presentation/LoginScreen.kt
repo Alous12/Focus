@@ -2,8 +2,12 @@ package com.hlasoftware.focus.features.login.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,12 +18,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.koin.androidx.compose.koinViewModel
 import androidx.annotation.DrawableRes
 import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.login.domain.model.UserModel
+import com.hlasoftware.focus.ui.theme.AuthBackground
+import com.hlasoftware.focus.ui.theme.MidnightGreen
+import com.hlasoftware.focus.ui.theme.component.BackgroundShapes
+import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun LoginScreen(
@@ -29,7 +38,7 @@ fun LoginScreen(
     onSignUpClicked: () -> Unit
 ) {
     val uiState by vm.uiState.collectAsState()
-
+    var passwordVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.success) {
         if (uiState.success && uiState.user != null) {
@@ -40,79 +49,103 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF2E3B46)),
-        contentAlignment = Alignment.Center
+            .background(AuthBackground)
     ) {
+        // CAPA 1: Formas de fondo
+        BackgroundShapes(modifier = Modifier.fillMaxSize())
+
+        // CAPA 2: Contenido de la UI
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
-            Spacer(modifier = Modifier.height(100.dp))
+            // ➡️ AUMENTADO: Bajamos el título principal
+            Spacer(modifier = Modifier.height(130.dp))
 
             Text(
                 text = "Inicia Sesión",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.padding(bottom = 50.dp)
             )
 
-            Spacer(modifier = Modifier.height(50.dp))
-
-
-            OutlinedTextField(
+            // --- CAMPO EMAIL/NÚMERO ---
+            TextField(
                 value = uiState.email,
                 onValueChange = vm::onEmailChanged,
-                label = { Text("Ingresa tu número o correo electrónico", color = Color.LightGray) },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray,
+                label = { Text("Ingresa tu número o correo electrónico", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }, // ➡️ AUMENTADO FONT SIZE (16.sp)
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.White,
+                    unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
                     cursorColor = Color.White
                 ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            OutlinedTextField(
-                value = uiState.password,
-                onValueChange = vm::onPasswordChanged,
-                label = { Text("Ingresa tu contraseña", color = Color.LightGray) },
-                visualTransformation = PasswordVisualTransformation(),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.LightGray,
-                    unfocusedBorderColor = Color.LightGray,
-                    cursorColor = Color.White
-                ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White),
+                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp), // ➡️ AUMENTADO FONT SIZE (16.sp)
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
+
+            // --- CAMPO CONTRASEÑA ---
+            TextField(
+                value = uiState.password,
+                onValueChange = vm::onPasswordChanged,
+                label = { Text("Ingresa tu contraseña", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }, // ➡️ AUMENTADO FONT SIZE (16.sp)
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector  = image, contentDescription = "Toggle password visibility", tint = Color.LightGray)
+                    }
+                },
+                colors = TextFieldDefaults.colors(
+                    unfocusedContainerColor = Color.Transparent,
+                    focusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
+                    focusedIndicatorColor = Color.White,
+                    unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
+                    cursorColor = Color.White
+                ),
+                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp), // ➡️ AUMENTADO FONT SIZE (16.sp)
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Texto "¿Olvidaste tu contraseña?" alineado a la derecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onForgotPasswordClicked) {
+                TextButton(onClick = onForgotPasswordClicked, contentPadding = PaddingValues(0.dp)) {
                     Text(
                         "¿Olvidaste tu contraseña?",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 12.sp
+                        color = Color.LightGray,
+                        fontSize = 14.sp // ➡️ AUMENTADO FONT SIZE (14.sp)
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
+            // --- BOTÓN INICIA SESIÓN ---
             Button(
                 onClick = { vm.login() },
                 enabled = !uiState.loading,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00796B))
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                colors = ButtonDefaults.buttonColors(containerColor = MidnightGreen)
             ) {
                 if (uiState.loading) {
                     CircularProgressIndicator(color = Color.White)
@@ -126,7 +159,6 @@ fun LoginScreen(
                 }
             }
 
-
             Spacer(modifier = Modifier.height(16.dp))
             uiState.error?.let { error ->
                 Text(
@@ -137,41 +169,71 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
+            // --- SECCIÓN SOCIAL ---
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    "ó inicia sesión con",
-                    color = Color.White.copy(alpha = 0.5f),
-                    modifier = Modifier.padding(bottom = 16.dp)
+            // Línea divisoria central más estética
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                // Divisor a la izquierda
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = Color.LightGray.copy(alpha = 0.2f)
                 )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceAround
-                ) {
-                    SocialButton(R.drawable.facebook_icon)
-                    SocialButton(R.drawable.google_icon)
-                    SocialButton(R.drawable.instagram_icon)
-                }
+                // Texto central
+                Text(
+                    "ó inicia sesión con",
+                    color = Color.LightGray.copy(alpha = 0.5f),
+                    fontSize = 14.sp, // ➡️ AUMENTADO FONT SIZE (14.sp)
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-
-                Row(
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        "¿No tienes una cuenta? ",
-                        color = Color.White.copy(alpha = 0.7f),
-                        fontSize = 14.sp
-                    )
-                    Button(onClick = onSignUpClicked) {
-                        Text("Regístrate")
-                    }
-                }
+                // Divisor a la derecha
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = Color.LightGray.copy(alpha = 0.2f)
+                )
             }
 
-            Spacer(modifier = Modifier.height(50.dp))
+            // Iconos sociales
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                SocialButton(R.drawable.facebook_icon)
+                SocialButton(R.drawable.google_icon)
+                SocialButton(R.drawable.instagram_icon)
+
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // ➡️ MEJORADO: Texto "¿No tienes una cuenta? Regístrate"
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(bottom = 50.dp)
+            ) {
+                Text(
+                    "¿No tienes una cuenta? ",
+                    color = Color.White.copy(alpha = 0.7f),
+                    fontSize = 16.sp // ➡️ AUMENTADO FONT SIZE (16.sp)
+                )
+                TextButton(onClick = onSignUpClicked, contentPadding = PaddingValues(0.dp)) {
+                    Text(
+                        "Regístrate",
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold, // ➡️ Más énfasis al enlace
+                        fontSize = 16.sp // ➡️ AUMENTADO FONT SIZE (16.sp)
+                    )
+                }
+            }
         }
     }
 }
@@ -184,9 +246,9 @@ fun SocialButton(
     Image(
         painter = painterResource(id = iconId),
         contentDescription = null,
-        contentScale = ContentScale.Crop,
+        contentScale = ContentScale.Fit,
         modifier = Modifier
-            .size(50.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .size(45.dp)
+            .clip(RoundedCornerShape(8.dp))
     )
 }
