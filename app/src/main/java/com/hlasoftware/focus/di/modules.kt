@@ -2,8 +2,9 @@ package com.hlasoftware.focus.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.hlasoftware.focus.features.home.data.repository.HomeRepository
-import com.hlasoftware.focus.features.home.domain.repository.IHomeRepository
+import com.hlasoftware.focus.features.activities.data.repository.ActivityRepository
+import com.hlasoftware.focus.features.activities.data.repository.ActivityRepositoryImpl
+import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import com.hlasoftware.focus.features.home.presentation.HomeViewModel
 import com.hlasoftware.focus.features.login.data.repository.LoginRepository
@@ -36,7 +37,9 @@ val appModule = module {
     factory { SignUpUseCase(get()) }
     viewModel { SignUpViewModel(get()) }
 
-    single<IHomeRepository> { HomeRepository() }
+    // Activity-related dependencies
+    single<ActivityRepository> { ActivityRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }
+    viewModel { CreateActivityViewModel(get(), get()) }
 }

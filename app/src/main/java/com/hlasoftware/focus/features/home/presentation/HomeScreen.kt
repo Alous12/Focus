@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
+import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
@@ -19,8 +21,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityScreen
+import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
-import com.hlasoftware.focus.features.home.domain.model.ActivityType
 import com.hlasoftware.focus.ui.theme.IndicatorClass
 import com.hlasoftware.focus.ui.theme.IndicatorMeeting
 import com.hlasoftware.focus.ui.theme.IndicatorTask
@@ -33,13 +36,25 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     userId: String,
-    homeViewModel: HomeViewModel = koinViewModel()
+    homeViewModel: HomeViewModel = koinViewModel(),
+    createActivityViewModel: CreateActivityViewModel = koinViewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
     var selectedBottomNavItem by remember { mutableStateOf(BottomNavItem.Home) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var showCreateActivityDialog by remember { mutableStateOf(false) }
 
-    // Este efecto se ejecutará cada vez que `selectedDate` o `userId` cambien.
+    if (showCreateActivityDialog) {
+        CreateActivityScreen(
+            onDismiss = { showCreateActivityDialog = false },
+            onCreate = { name, description, date, time ->
+                createActivityViewModel.createActivity(name, description, date, time)
+                showCreateActivityDialog = false
+                homeViewModel.loadHome(userId, selectedDate) // Refresh list
+            }
+        )
+    }
+
     LaunchedEffect(userId, selectedDate) {
         homeViewModel.loadHome(userId, selectedDate)
     }
@@ -54,7 +69,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: Handle FAB click */ },
+                onClick = { showCreateActivityDialog = true },
                 containerColor = MaterialTheme.colorScheme.tertiary,
                 contentColor = MaterialTheme.colorScheme.onTertiary
             ) {
@@ -133,11 +148,11 @@ fun DateSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onPreviousDay) {
-            Icon(Icons.Default.ArrowBackIos, contentDescription = "Día anterior", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            Icon(Icons.AutoMirrored.Filled.ArrowBackIos, contentDescription = "Día anterior", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
         Text(formattedDate, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
         IconButton(onClick = onNextDay) {
-            Icon(Icons.Default.ArrowForwardIos, contentDescription = "Día siguiente", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "Día siguiente", tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }
 }
@@ -165,9 +180,10 @@ fun ActivitiesList(
 @Composable
 fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
     val indicatorColor = when (activity.type) {
-        ActivityType.CLASS -> IndicatorClass
-        ActivityType.TASK -> IndicatorTask
-        ActivityType.MEETING -> IndicatorMeeting
+        "CLASS" -> IndicatorClass
+        "TASK" -> IndicatorTask
+        "MEETING" -> IndicatorMeeting
+        else -> Color.Gray
     }
 
     Card(
@@ -195,11 +211,13 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = activity.timeRange,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
-                )
+                activity.startTime?.let {
+                    Text(
+                        text = "${activity.startTime}${activity.endTime?.let { e -> " - $e" } ?: ""}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    )
+                }
             }
             IconButton(onClick = onOptionsClicked) {
                 Icon(
@@ -212,7 +230,7 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
     }
 }
 
-// Bottom Navigation
+
 enum class BottomNavItem(
     val route: String,
     val label: String,
@@ -230,7 +248,7 @@ fun HomeBottomNavigationBar(
     selectedItem: BottomNavItem,
     onItemSelected: (BottomNavItem) -> Unit
 ) {
-    val items = BottomNavItem.values()
+    val items = BottomNavItem.entries
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface

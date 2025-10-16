@@ -1,14 +1,13 @@
-package com.hlasoftware.focus.features.home.domain.usecase // Make sure this package path is correct
+package com.hlasoftware.focus.features.home.domain.usecase
 
+import com.hlasoftware.focus.features.activities.data.repository.ActivityRepository
 import com.hlasoftware.focus.features.home.domain.model.HomeModel
-import com.hlasoftware.focus.features.home.domain.repository.IHomeRepository
 import java.time.LocalDate
 
-
-class HomeUseCase(
-    private val repository: IHomeRepository
-) {
+class HomeUseCase(private val activityRepository: ActivityRepository) {
     suspend operator fun invoke(userId: String, date: LocalDate): HomeModel {
-        return repository.getHomeData(userId, date)
+        val activities = activityRepository.getActivities(userId, date)
+        // You can add more logic here if needed, for example, sorting activities
+        return HomeModel(upcomingActivities = activities)
     }
 }

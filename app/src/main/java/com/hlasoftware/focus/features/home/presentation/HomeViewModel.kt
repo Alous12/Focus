@@ -3,7 +3,6 @@ package com.hlasoftware.focus.features.home.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
-import com.hlasoftware.focus.features.home.domain.model.HomeModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,17 +23,13 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
-<<<<<<< HEAD
 
-    fun loadHome(userId: String) {
-=======
-    // Carga los datos de home según userId y la fecha seleccionada
+
     fun loadHome(userId: String, date: LocalDate) {
->>>>>>> 1e06850c81ce53a36e89bb9a635689304fa14269
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
-                // Pasamos la fecha al caso de uso
+
                 val homeModel = homeUseCase(userId, date)
                 _uiState.value = HomeUiState.Success(homeModel.upcomingActivities)
             } catch (e: Exception) {
