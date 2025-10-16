@@ -37,17 +37,14 @@ android {
 
 dependencies {
     // Firebase
-
-    // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.3.0")) // Use the latest BoM version
-
-    // Add the dependency for the Firebase Authentication library    // WITHOUT the "-ktx" suffix and WITHOUT a version number
     implementation("com.google.firebase:firebase-auth")
-
+    implementation(libs.datastore)
     // Add other Firebase dependencies you need
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-config-ktx:21.1.0")
 
     // Compose / AndroidX
     implementation(libs.androidx.core.ktx)

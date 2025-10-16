@@ -32,6 +32,8 @@ koinAndroidxNavigation = "3.3.0"
 googleGmsGoogleServices = "4.4.3"
 firebaseAuthKtx = "24.0.1"
 material3 = "1.4.0"
+datastore = "1.0.0"
+firebaseConfigKtx = "23.0.1"
 
 [libraries]
 # Firebase (sin versión explícita; la pone el BOM)
@@ -66,6 +68,8 @@ coil-network = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 koin-androidx-navigation = { module = "io.insert-koin:koin-androidx-navigation", version.ref = "koinAndroidxNavigation" }
+datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+
 
 # Tests base
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -76,6 +80,7 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 google-firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuthKtx" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+firebase-config-ktx = { group = "com.google.firebase", name = "firebase-config-ktx", version.ref = "firebaseConfigKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

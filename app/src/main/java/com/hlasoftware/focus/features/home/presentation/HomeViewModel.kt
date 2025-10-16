@@ -23,7 +23,7 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
-    // Carga los datos de home según userId
+
     fun loadHome(userId: String) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
