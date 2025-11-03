@@ -1,8 +1,8 @@
 package com.hlasoftware.focus.features.signup.domain.repository
 
+import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.signup.domain.model.SignUpModel
-import com.hlasoftware.focus.features.signup.domain.model.UserProfile
 
 interface SignUpRepository {
-    suspend fun register(params: SignUpModel): UserProfile
+    suspend fun register(params: SignUpModel): ProfileModel
 }

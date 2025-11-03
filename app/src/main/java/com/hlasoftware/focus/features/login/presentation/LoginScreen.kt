@@ -62,7 +62,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            // ➡️ AUMENTADO: Bajamos el título principal
             Spacer(modifier = Modifier.height(130.dp))
 
             Text(
@@ -77,7 +76,8 @@ fun LoginScreen(
             TextField(
                 value = uiState.email,
                 onValueChange = vm::onEmailChanged,
-                label = { Text("Ingresa tu número o correo electrónico", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }, // ➡️ AUMENTADO FONT SIZE (16.sp)
+                label = { Text("Ingresa tu número o correo electrónico", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) },
+                singleLine = true, // CORREGIDO: Evita el salto de línea
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent,
@@ -86,7 +86,7 @@ fun LoginScreen(
                     unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
                     cursorColor = Color.White
                 ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp), // ➡️ AUMENTADO FONT SIZE (16.sp)
+                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -96,7 +96,8 @@ fun LoginScreen(
             TextField(
                 value = uiState.password,
                 onValueChange = vm::onPasswordChanged,
-                label = { Text("Ingresa tu contraseña", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }, // ➡️ AUMENTADO FONT SIZE (16.sp)
+                label = { Text("Ingresa tu contraseña", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) },
+                singleLine = true, // Añadido por consistencia
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (passwordVisible)
@@ -115,7 +116,7 @@ fun LoginScreen(
                     unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
                     cursorColor = Color.White
                 ),
-                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp), // ➡️ AUMENTADO FONT SIZE (16.sp)
+                textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp),
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -130,7 +131,7 @@ fun LoginScreen(
                     Text(
                         "¿Olvidaste tu contraseña?",
                         color = Color.LightGray,
-                        fontSize = 14.sp // ➡️ AUMENTADO FONT SIZE (14.sp)
+                        fontSize = 14.sp
                     )
                 }
             }
@@ -171,28 +172,24 @@ fun LoginScreen(
 
             // --- SECCIÓN SOCIAL ---
 
-            // Línea divisoria central más estética
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                // Divisor a la izquierda
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
                     color = Color.LightGray.copy(alpha = 0.2f)
                 )
 
-                // Texto central
                 Text(
                     "ó inicia sesión con",
                     color = Color.LightGray.copy(alpha = 0.5f),
-                    fontSize = 14.sp, // ➡️ AUMENTADO FONT SIZE (14.sp)
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
 
-                // Divisor a la derecha
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
@@ -215,7 +212,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // ➡️ MEJORADO: Texto "¿No tienes una cuenta? Regístrate"
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(bottom = 50.dp)
@@ -223,14 +219,14 @@ fun LoginScreen(
                 Text(
                     "¿No tienes una cuenta? ",
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 16.sp // ➡️ AUMENTADO FONT SIZE (16.sp)
+                    fontSize = 16.sp
                 )
                 TextButton(onClick = onSignUpClicked, contentPadding = PaddingValues(0.dp)) {
                     Text(
                         "Regístrate",
                         color = Color.White,
-                        fontWeight = FontWeight.ExtraBold, // ➡️ Más énfasis al enlace
-                        fontSize = 16.sp // ➡️ AUMENTADO FONT SIZE (16.sp)
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 16.sp
                     )
                 }
             }

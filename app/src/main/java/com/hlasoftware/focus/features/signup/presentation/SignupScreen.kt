@@ -25,44 +25,43 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.hlasoftware.focus.R
-import com.hlasoftware.focus.features.signup.domain.model.UserProfile
+import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.ui.theme.AuthBackground
 import com.hlasoftware.focus.ui.theme.MidnightGreen
-import com.hlasoftware.focus.ui.theme.component.BackgroundShapes // Asumiendo que BackgroundShapes está disponible
+import com.hlasoftware.focus.ui.theme.component.BackgroundShapes
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
-// NOTA: Se necesita añadir el composable SocialButton y HorizontalDivider si no están definidos globalmente.
-// Los he añadido aquí para que el archivo sea autocontenido.
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(
     viewModel: SignUpViewModel,
     onBackClicked: () -> Unit,
-    onSuccess: (user: UserProfile) -> Unit
+    onSuccess: (user: ProfileModel) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val errorMessage = uiState.error
 
-    // Estados locales para la visibilidad de las contraseñas
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) } // Estado para el DatePicker
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(AuthBackground) // Usar el color de fondo consistente
+            .background(AuthBackground)
     ) {
-        // CAPA 1: Formas de fondo
         BackgroundShapes(modifier = Modifier.fillMaxSize())
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp), // Padding lateral consistente
+                .padding(horizontal = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-
-            // Espacio para bajar el título "Regístrate"
             Spacer(modifier = Modifier.height(130.dp))
 
             Text(
@@ -73,7 +72,6 @@ fun SignUpScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
 
-            // --- ESTILO DE CAMPO DE TEXTO DE LÍNEA ---
             val lineTextFieldColors = TextFieldDefaults.colors(
                 unfocusedContainerColor = Color.Transparent,
                 focusedContainerColor = Color.Transparent,
@@ -87,7 +85,6 @@ fun SignUpScreen(
                 { Text(label, color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }
             }
 
-            // --- Name Field ---
             TextField(
                 value = uiState.name,
                 onValueChange = viewModel::onNameChanged,
@@ -99,10 +96,10 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Birthdate Field (con icono de calendario) ---
             TextField(
                 value = uiState.birthdate,
-                onValueChange = viewModel::onBirthdateChanged,
+                onValueChange = {},
+                readOnly = true,
                 label = lineLabelStyle("Ingresa tu fecha de nacimiento"),
                 singleLine = true,
                 colors = lineTextFieldColors,
@@ -111,14 +108,14 @@ fun SignUpScreen(
                     Icon(
                         imageVector = Icons.Filled.CalendarMonth,
                         contentDescription = "Seleccionar fecha",
-                        tint = Color.LightGray
+                        tint = Color.LightGray,
+                        modifier = Modifier.clickable { showDatePicker = true }
                     )
                 },
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Email Field ---
             TextField(
                 value = uiState.email,
                 onValueChange = viewModel::onEmailChanged,
@@ -130,7 +127,6 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Password Field (con icono de visibilidad) ---
             TextField(
                 value = uiState.password,
                 onValueChange = viewModel::onPasswordChanged,
@@ -140,7 +136,7 @@ fun SignUpScreen(
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
-                            imageVector  = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = "Toggle password visibility",
                             tint = Color.LightGray
                         )
@@ -152,7 +148,6 @@ fun SignUpScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- Confirm Password Field (con icono de visibilidad) ---
             TextField(
                 value = uiState.confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChanged,
@@ -162,7 +157,7 @@ fun SignUpScreen(
                 trailingIcon = {
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(
-                            imageVector  = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
+                            imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                             contentDescription = "Toggle confirm password visibility",
                             tint = Color.LightGray
                         )
@@ -172,9 +167,8 @@ fun SignUpScreen(
                 textStyle = lineTextStyle,
                 modifier = Modifier.fillMaxWidth()
             )
-            Spacer(modifier = Modifier.height(24.dp)) // Espacio antes del botón de registro
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Show Error/Success Message ---
             if (errorMessage != null) {
                 Text(errorMessage, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
@@ -182,14 +176,13 @@ fun SignUpScreen(
                 Text("¡Registro exitoso!", color = Color.Green, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
 
-            // --- Register Button ---
             Button(
                 onClick = { viewModel.onSignUpClick() },
                 enabled = !uiState.loading && uiState.name.isNotBlank() && uiState.email.isNotBlank() && uiState.password.isNotBlank() && uiState.confirmPassword.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
-                    .clip(RoundedCornerShape(12.dp)), // Altura y bordes consistentes con Login
+                    .clip(RoundedCornerShape(12.dp)),
                 colors = ButtonDefaults.buttonColors(containerColor = MidnightGreen)
             ) {
                 if (uiState.loading) {
@@ -199,10 +192,8 @@ fun SignUpScreen(
                 }
             }
 
-            // Usamos weight para empujar el contenido inferior al final
             Spacer(modifier = Modifier.weight(1f))
 
-            // --- SECCIÓN SOCIAL CON LÍNEA DIVISORIA ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -213,14 +204,12 @@ fun SignUpScreen(
                     thickness = 1.dp,
                     color = Color.LightGray.copy(alpha = 0.2f)
                 )
-
                 Text(
                     "ó regístrate con",
                     color = Color.LightGray.copy(alpha = 0.5f),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
-
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
@@ -228,7 +217,6 @@ fun SignUpScreen(
                 )
             }
 
-            // Iconos sociales (Asumiendo que R.drawable.* existen)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -242,10 +230,9 @@ fun SignUpScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Enlace "¿Ya tienes una cuenta? Inicia Sesión"
             Row(
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(bottom = 50.dp).clickable { onBackClicked() } // Agregamos el clickable aquí
+                modifier = Modifier.padding(bottom = 50.dp).clickable { onBackClicked() }
             ) {
                 Text(
                     "¿Ya tienes una cuenta? ",
@@ -255,30 +242,52 @@ fun SignUpScreen(
                 Text(
                     "Inicia Sesión",
                     color = Color.White,
-                    fontWeight = FontWeight.ExtraBold, // Énfasis
+                    fontWeight = FontWeight.ExtraBold,
                     fontSize = 16.sp
                 )
             }
         }
     }
 
-    // Callback onSuccess when registration is successful
+    // --- Date Picker Dialog ---
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).apply {
+                            timeZone = TimeZone.getTimeZone("UTC")
+                        }
+                        viewModel.onBirthdateChanged(formatter.format(Date(it)))
+                    }
+                    showDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("Cancelar")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     if (uiState.success) {
-        onSuccess(uiState.user!!)
+        uiState.user?.let { onSuccess(it) }
     }
 }
 
-// Composable SocialButton (copiado de LoginScreen para consistencia)
 @Composable
-fun SocialButton(
-    @DrawableRes iconId: Int
-) {
+fun SocialButton(@DrawableRes iconId: Int) {
     Image(
         painter = painterResource(id = iconId),
         contentDescription = null,
         contentScale = ContentScale.Fit,
-        modifier = Modifier
-            .size(45.dp)
-            .clip(RoundedCornerShape(8.dp))
+        modifier = Modifier.size(45.dp).clip(RoundedCornerShape(8.dp))
     )
 }

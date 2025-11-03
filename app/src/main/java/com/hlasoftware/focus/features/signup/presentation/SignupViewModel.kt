@@ -2,9 +2,11 @@ package com.hlasoftware.focus.features.signup.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.signup.domain.model.SignUpModel
-import com.hlasoftware.focus.features.signup.domain.model.UserProfile
 import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -18,7 +20,7 @@ data class SignUpUiState(
     val loading: Boolean = false,
     val success: Boolean = false,
     val error: String? = null,
-    val user: UserProfile? = null // ← perfil resultante al registrarse
+    val user: ProfileModel? = null
 )
 
 class SignUpViewModel(
@@ -27,6 +29,8 @@ class SignUpViewModel(
 
     private val _uiState = MutableStateFlow(SignUpUiState())
     val uiState: StateFlow<SignUpUiState> = _uiState
+
+    private var errorJob: Job? = null
 
     fun onNameChanged(name: String) {
         _uiState.value = _uiState.value.copy(name = name, error = null)
@@ -37,15 +41,39 @@ class SignUpViewModel(
     }
 
     fun onEmailChanged(email: String) {
-        _uiState.value = _uiState.value.copy(email = email, error = null)
+        _uiState.value = _uiState.value.copy(email = email.filter { it != '\n' }, error = null)
     }
 
     fun onPasswordChanged(password: String) {
-        _uiState.value = _uiState.value.copy(password = password, error = null)
+        errorJob?.cancel()
+
+        if (password.length <= 20) {
+            _uiState.value = _uiState.value.copy(password = password, error = null)
+        } else {
+            _uiState.value = _uiState.value.copy(password = password, error = "La contraseña no puede exceder los 20 caracteres.")
+            errorJob = viewModelScope.launch {
+                delay(2000)
+                if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
+                    _uiState.value = _uiState.value.copy(error = null)
+                }
+            }
+        }
     }
 
     fun onConfirmPasswordChanged(confirm: String) {
-        _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = null)
+        errorJob?.cancel()
+
+        if (confirm.length <= 20) {
+            _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = null)
+        } else {
+            _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = "La contraseña no puede exceder los 20 caracteres.")
+            errorJob = viewModelScope.launch {
+                delay(2000)
+                if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
+                    _uiState.value = _uiState.value.copy(error = null)
+                }
+            }
+        }
     }
 
     fun reset() {
@@ -55,7 +83,6 @@ class SignUpViewModel(
     fun onSignUpClick() {
         val current = _uiState.value
 
-        // Validaciones locales
         if (
             current.name.isBlank() ||
             current.birthdate.isBlank() ||
@@ -86,8 +113,6 @@ class SignUpViewModel(
             _uiState.value = current.copy(loading = true, error = null)
 
             try {
-                // Tu SignUpModel del dominio puede tener (name, birthdate, email, password, confirmPassword)
-                // El use case internamente usará email/password y guardará el perfil en Firestore
                 val params = SignUpModel(
                     name = current.name,
                     birthdate = current.birthdate,
@@ -96,8 +121,7 @@ class SignUpViewModel(
                     confirmPassword = current.confirmPassword
                 )
 
-                // UseCase retorna UserProfile si todo sale bien
-                val profile: UserProfile = signUpUseCase(params)
+                val profile: ProfileModel = signUpUseCase(params)
 
                 _uiState.value = _uiState.value.copy(
                     loading = false,
@@ -106,7 +130,6 @@ class SignUpViewModel(
                     error = null
                 )
             } catch (e: Exception) {
-                // Por ejemplo: email en uso, formato inválido, etc.
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     success = false,

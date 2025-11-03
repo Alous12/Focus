@@ -23,15 +23,12 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
-
-
     fun loadHome(userId: String, date: LocalDate) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
-
-                val homeModel = homeUseCase(userId, date)
-                _uiState.value = HomeUiState.Success(homeModel.upcomingActivities)
+                val activities = homeUseCase(userId, date)
+                _uiState.value = HomeUiState.Success(activities)
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Error cargando actividades")
             }

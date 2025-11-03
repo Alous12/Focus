@@ -5,6 +5,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepository
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepositoryImpl
 import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
+import com.hlasoftware.focus.features.home.data.repository.HomeRepositoryImpl
+import com.hlasoftware.focus.features.home.domain.repository.IHomeRepository
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import com.hlasoftware.focus.features.home.presentation.HomeViewModel
 import com.hlasoftware.focus.features.login.data.repository.LoginRepository
@@ -22,23 +24,37 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
+
+    // --- 1. DEPENDENCIAS DE FIREBASE (Definidas primero para claridad) ---
+    single { FirebaseAuth.getInstance() }
+    single { FirebaseFirestore.getInstance() }
+
+    // --- 2. FEATURE LOGIN ---
+    // LoginRepository solo necesita FirebaseAuth (get())
     single { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
     viewModel { LoginViewModel(get()) }
 
 
-    single<IProfileRepository> { ProfileRepository() }
+    // --- 3. FEATURE PROFILE (CORREGIDO) ---
+    single<IProfileRepository> {
+        ProfileRepository(
+            firestore = get(), // ⬅️ Koin inyecta FirebaseFirestore
+            auth = get()       // ⬅️ Koin inyecta FirebaseAuth
+        )
+    }
     factory { GetProfileUseCase(get()) }
     viewModel { ProfileViewModel(get()) }
 
-    single <SignUpRepository>{ SignUpRepositoryImpl(get(),get()) }
-    single { FirebaseAuth.getInstance() }
-    single { FirebaseFirestore.getInstance() }
+    // --- 4. FEATURE SIGNUP ---
+    // SignUpRepositoryImpl requiere FirebaseAuth y FirebaseFirestore (ambos get())
+    single <SignUpRepository>{ SignUpRepositoryImpl(get(), get()) }
     factory { SignUpUseCase(get()) }
     viewModel { SignUpViewModel(get()) }
 
-    // Activity-related dependencies
+    // --- 5. ACTIVITY/HOME ---
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
+    single<IHomeRepository> { HomeRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { CreateActivityViewModel(get(), get()) }

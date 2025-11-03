@@ -1,7 +1,18 @@
 package com.hlasoftware.focus.features.home.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -9,20 +20,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBackIos
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityScreen
-import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.ui.theme.IndicatorClass
 import com.hlasoftware.focus.ui.theme.IndicatorMeeting
@@ -32,97 +50,61 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     userId: String,
     homeViewModel: HomeViewModel = koinViewModel(),
-    createActivityViewModel: CreateActivityViewModel = koinViewModel()
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
-    var selectedBottomNavItem by remember { mutableStateOf(BottomNavItem.Home) }
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var showCreateActivityDialog by remember { mutableStateOf(false) }
-
-    if (showCreateActivityDialog) {
-        CreateActivityScreen(
-            onDismiss = { showCreateActivityDialog = false },
-            onCreate = { name, description, date, time ->
-                createActivityViewModel.createActivity(name, description, date, time)
-                showCreateActivityDialog = false
-                homeViewModel.loadHome(userId, selectedDate) // Refresh list
-            }
-        )
-    }
 
     LaunchedEffect(userId, selectedDate) {
         homeViewModel.loadHome(userId, selectedDate)
     }
 
-    Scaffold(
-        topBar = { HomeTopAppBar() },
-        bottomBar = {
-            HomeBottomNavigationBar(
-                selectedItem = selectedBottomNavItem,
-                onItemSelected = { selectedBottomNavItem = it }
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { showCreateActivityDialog = true },
-                containerColor = MaterialTheme.colorScheme.tertiary,
-                contentColor = MaterialTheme.colorScheme.onTertiary
-            ) {
-                Icon(Icons.Filled.Add, contentDescription = "Añadir Actividad")
-            }
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            DateSelector(
-                currentDate = selectedDate,
-                onPreviousDay = { selectedDate = selectedDate.minusDays(1) },
-                onNextDay = { selectedDate = selectedDate.plusDays(1) }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        DateSelector(
+            currentDate = selectedDate,
+            onPreviousDay = { selectedDate = selectedDate.minusDays(1) },
+            onNextDay = { selectedDate = selectedDate.plusDays(1) }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-            when (uiState) {
-                is HomeUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                    }
+        when (val state = uiState) {
+            is HomeUiState.Loading -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
-                is HomeUiState.Success -> {
-                    val activities = (uiState as HomeUiState.Success).activities
-                    if (activities.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No hay actividades para este día.", color = MaterialTheme.colorScheme.onBackground)
+            }
+            is HomeUiState.Success -> {
+                if (state.activities.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("No hay actividades para este día.", color = MaterialTheme.colorScheme.onBackground)
+                    }
+                } else {
+                    ActivitiesList(
+                        activities = state.activities,
+                        onOptionsClicked = { activityId ->
+                            homeViewModel.onActivityOptionsClicked(activityId)
                         }
-                    } else {
-                        ActivitiesList(
-                            activities = activities,
-                            onOptionsClicked = { activityId ->
-                                homeViewModel.onActivityOptionsClicked(activityId)
-                            }
-                        )
-                    }
+                    )
                 }
-                is HomeUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Error: ${(uiState as HomeUiState.Error).message}",
-                            color = MaterialTheme.colorScheme.error
-                        )
-                    }
+            }
+            is HomeUiState.Error -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "Error: ${state.message}",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             }
         }
@@ -228,68 +210,4 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
             }
         }
     }
-}
-
-
-enum class BottomNavItem(
-    val route: String,
-    val label: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
-) {
-    Home("home_screen_route", "Inicio", Icons.Filled.Home, Icons.Outlined.Home),
-    WorkGroups("work_groups_route", "Work Groups", Icons.Filled.GroupWork, Icons.Outlined.GroupWork),
-    Routines("routines_route", "Rutinas", Icons.Filled.ViewTimeline, Icons.Outlined.ViewTimeline),
-    Profile("profile_route", "Perfil", Icons.Filled.Person, Icons.Outlined.Person)
-}
-
-@Composable
-fun HomeBottomNavigationBar(
-    selectedItem: BottomNavItem,
-    onItemSelected: (BottomNavItem) -> Unit
-) {
-    val items = BottomNavItem.entries
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentColor = MaterialTheme.colorScheme.onSurface
-    ) {
-        items.forEach { item ->
-            NavigationBarItem(
-                icon = {
-                    Icon(
-                        imageVector = if (selectedItem == item) item.selectedIcon else item.unselectedIcon,
-                        contentDescription = item.label
-                    )
-                },
-                label = { Text(item.label, fontSize = 10.sp, maxLines = 1) },
-                selected = selectedItem == item,
-                onClick = { onItemSelected(item) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    unselectedIconColor = MaterialTheme.colorScheme.onSurface,
-                    unselectedTextColor = MaterialTheme.colorScheme.onSurface,
-                    indicatorColor = Color.Transparent
-                )
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HomeTopAppBar() {
-    TopAppBar(
-        title = {
-            Text(
-                text = "Actividades Próximas",
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
-            )
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    )
 }
