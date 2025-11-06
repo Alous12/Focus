@@ -19,7 +19,7 @@ class CreateActivityViewModel(
         name: String,
         description: String,
         date: LocalDate,
-        time: LocalTime? // Time is optional
+        time: LocalTime?
     ) {
         viewModelScope.launch {
             val userId = auth.currentUser?.uid ?: return@launch

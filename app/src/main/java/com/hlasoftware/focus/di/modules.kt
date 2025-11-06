@@ -37,7 +37,7 @@ val appModule = module {
     factory { SignUpUseCase(get()) }
     viewModel { SignUpViewModel(get()) }
 
-    // Activity-related dependencies
+
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }

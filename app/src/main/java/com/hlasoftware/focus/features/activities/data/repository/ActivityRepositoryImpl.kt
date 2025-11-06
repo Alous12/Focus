@@ -20,7 +20,6 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
                 .await()
             snapshot.toObjects(ActivityModel::class.java)
         } catch (e: Exception) {
-            // You might want to log the exception or handle it differently
             emptyList()
         }
     }
@@ -29,7 +28,7 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
         try {
             activitiesCollection.add(activity).await()
         } catch (e: Exception) {
-            // Handle exception
+
         }
     }
 }
