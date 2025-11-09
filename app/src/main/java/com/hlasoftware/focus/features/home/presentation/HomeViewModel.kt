@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
 
 // Estado de la UI para Home
 sealed class HomeUiState {
@@ -23,17 +24,32 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
 
-
-
     fun loadHome(userId: String, date: LocalDate) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
-
-                val homeModel = homeUseCase(userId, date)
-                _uiState.value = HomeUiState.Success(homeModel.upcomingActivities)
+                val activities = homeUseCase(userId, date)
+                _uiState.value = HomeUiState.Success(activities.upcomingActivities)
             } catch (e: Exception) {
                 _uiState.value = HomeUiState.Error(e.message ?: "Error cargando actividades")
+            }
+        }
+    }
+
+    fun createActivity(
+        userId: String,
+        title: String,
+        description: String,
+        date: LocalDate,
+        time: LocalTime?
+    ) {
+        viewModelScope.launch {
+            try {
+                homeUseCase.createActivity(userId, title, description, date, time)
+                // Recargamos las actividades para la fecha en que se creó la nueva actividad
+                loadHome(userId, date)
+            } catch (e: Exception) {
+                _uiState.value = HomeUiState.Error(e.message ?: "Error creando la actividad")
             }
         }
     }

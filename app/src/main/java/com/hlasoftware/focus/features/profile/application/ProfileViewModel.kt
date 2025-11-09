@@ -11,31 +11,30 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
-    val profileUseCase: GetProfileUseCase
-): ViewModel() {
-    // UI STATE
+    private val profileUseCase: GetProfileUseCase
+) : ViewModel() {
+
     sealed class ProfileUiState {
-        object Init: ProfileUiState()
-        object Loading: ProfileUiState()
-        class Error(val message: String): ProfileUiState()
-        class Success(val profile: ProfileModel): ProfileUiState()
+        object Init : ProfileUiState()
+        object Loading : ProfileUiState()
+        data class Error(val message: String) : ProfileUiState()
+        data class Success(val profile: ProfileModel) : ProfileUiState()
     }
 
-    // variable mutable y observable
-    private var _state = MutableStateFlow<ProfileUiState>(ProfileUiState.Init)
-    val state : StateFlow<ProfileUiState> = _state.asStateFlow()
+    private val _state = MutableStateFlow<ProfileUiState>(ProfileUiState.Init)
+    val state: StateFlow<ProfileUiState> = _state.asStateFlow()
 
-    // evento o eventos desencadenadores
-    fun showProfile() {
+    fun showProfile(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = ProfileUiState.Loading
-            val resultProfile = profileUseCase.invoke()
+            // El UseCase ahora requiere un userId
+            val resultProfile = profileUseCase.invoke(userId)
             resultProfile.fold(
                 onSuccess = {
                     _state.value = ProfileUiState.Success(it)
                 },
                 onFailure = {
-                    _state.value = ProfileUiState.Error(it.message.toString())
+                    _state.value = ProfileUiState.Error(it.message ?: "Ocurrió un error desconocido")
                 }
             )
         }

@@ -1,7 +1,6 @@
 package com.hlasoftware.focus.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -9,12 +8,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.hlasoftware.focus.features.forgot_password.presentation.ForgotPasswordScreen
-import com.hlasoftware.focus.features.home.presentation.HomeScreen
 import com.hlasoftware.focus.features.login.presentation.LoginScreen
-import com.hlasoftware.focus.features.profile.application.ProfileScreen
 import com.hlasoftware.focus.features.signup.presentation.SignUpScreen
-import com.hlasoftware.focus.features.signup.presentation.SignUpViewModel
 import org.koin.androidx.compose.koinViewModel
+
+// Sealed class para las rutas de navegación principales de la app (antes del login)
+sealed class AuthScreen(val route: String) {
+    object Login : AuthScreen("login")
+    object SignUp : AuthScreen("signup")
+    object ForgotPassword : AuthScreen("forgot_password")
+    object Main : AuthScreen("main/{userId}") { // Ruta que recibe el userId
+        fun createRoute(userId: String) = "main/$userId"
+    }
+}
 
 @Composable
 fun AppNavigation() {
@@ -22,70 +28,46 @@ fun AppNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = AuthScreen.Login.route
     ) {
-
-        composable(
-            route = "${Screen.Home.route}/{userId}",
-            arguments = listOf(navArgument("userId") { type = NavType.StringType })
-        ) { backStackEntry ->
-            val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            HomeScreen(userId = userId)
-        }
-
-        // Login
-        composable(Screen.Login.route) {
+        // Flujo de Autenticación
+        composable(AuthScreen.Login.route) {
             LoginScreen(
-                onForgotPasswordClicked = { navController.navigate(Screen.ForgotPassword.route) },
-                onLoginSuccess = { user ->
-                    navController.navigate("${Screen.Home.route}/${user.userId}") {
-                        popUpTo(Screen.Login.route) { inclusive = true }
+                onLoginSuccess = { user -> // user es de tipo UserModel
+                    navController.navigate(AuthScreen.Main.createRoute(user.userId)) {
+                        popUpTo(AuthScreen.Login.route) { inclusive = true }
                     }
                 },
-                onSignUpClicked = { navController.navigate(Screen.SignUp.route) }
+                onSignUpClicked = { navController.navigate(AuthScreen.SignUp.route) },
+                onForgotPasswordClicked = { navController.navigate(AuthScreen.ForgotPassword.route) }
             )
         }
 
-
-        composable(Screen.SignUp.route) {
-            val signUpViewModel: SignUpViewModel = koinViewModel()
-
+        composable(AuthScreen.SignUp.route) {
             SignUpScreen(
-                viewModel = signUpViewModel,
-                onBackClicked = {
-                    navController.popBackStack()
-                },
-                onSuccess = { userProfile ->
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.SignUp.route) { inclusive = true }
+                viewModel = koinViewModel(), // CORREGIDO: Se pasa el ViewModel
+                onSuccess = { user -> // user es de tipo ProfileModel
+                    navController.navigate(AuthScreen.Main.createRoute(user.uid)) {
+                        popUpTo(AuthScreen.SignUp.route) { inclusive = true }
                     }
-                }
+                },
+                onBackClicked = { navController.popBackStack() }
             )
         }
 
-
-
-        composable(Screen.ForgotPassword.route) {
+        composable(AuthScreen.ForgotPassword.route) {
             ForgotPasswordScreen(
-                onBackClicked = {
-                    navController.popBackStack()
-                }
+                onBackClicked = { navController.popBackStack() }
             )
         }
 
-
-        // Home
+        // Flujo Principal (después del login)
         composable(
-            route = "${Screen.Home.route}/{userId}",
+            route = AuthScreen.Main.route,
             arguments = listOf(navArgument("userId") { type = NavType.StringType })
         ) { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            HomeScreen(userId = userId)
-        }
-
-        // Profile
-        composable(Screen.Profile.route) {
-            ProfileScreen()
+            MainScreen(userId = userId)
         }
     }
 }

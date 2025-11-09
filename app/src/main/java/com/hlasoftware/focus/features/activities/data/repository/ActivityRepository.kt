@@ -2,8 +2,15 @@ package com.hlasoftware.focus.features.activities.data.repository
 
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import java.time.LocalDate
+import java.time.LocalTime
 
 interface ActivityRepository {
     suspend fun getActivities(userId: String, date: LocalDate): List<ActivityModel>
-    suspend fun addActivity(activity: ActivityModel)
+    suspend fun createActivity(
+        userId: String,
+        title: String,
+        description: String,
+        date: LocalDate,
+        time: LocalTime?
+    )
 }

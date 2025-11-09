@@ -27,7 +27,10 @@ val appModule = module {
     viewModel { LoginViewModel(get()) }
 
 
-    single<IProfileRepository> { ProfileRepository() }
+    single<IProfileRepository> { ProfileRepository(
+        firestore = get(),
+        auth = get() )
+    }
     factory { GetProfileUseCase(get()) }
     viewModel { ProfileViewModel(get()) }
 
