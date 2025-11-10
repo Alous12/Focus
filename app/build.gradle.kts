@@ -30,27 +30,30 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions { jvmTarget = "11" }
     buildFeatures { compose = true }
 }
 
 dependencies {
+    // Core Library Desugaring
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     // Firebase
-    implementation(platform("com.google.firebase:firebase-bom:34.3.0")) // Use the latest BoM version
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0")) // Use the latest BoM version
     implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-storage")
     implementation(libs.datastore)
-    // Add other Firebase dependencies you need
-    implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-config-ktx:21.1.0")
 
     // Compose / AndroidX
+    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
@@ -69,6 +72,7 @@ dependencies {
     implementation(libs.coil.kt.coil.compose)
     implementation(libs.androidx.compose.material3)
     implementation("androidx.compose.material:material-icons-extended-android:1.6.8")
+    implementation("com.kizitonwose.calendar:compose:2.6.0")
 
 
     // Tests

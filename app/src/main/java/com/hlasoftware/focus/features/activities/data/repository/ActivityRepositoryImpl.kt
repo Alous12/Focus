@@ -6,6 +6,7 @@ import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : ActivityRepository {
@@ -13,9 +14,8 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
     override suspend fun getActivities(userId: String, date: LocalDate): List<ActivityModel> {
         val dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
         return try {
-            // Apunta a la colección principal 'activities' y filtra por userId
             val snapshot = firestore.collection("activities")
-                .whereEqualTo("userId", userId) // Filtra las actividades del usuario
+                .whereEqualTo("userId", userId)
                 .whereEqualTo("date", dateString)
                 .orderBy("startTime", Query.Direction.ASCENDING)
                 .get()
@@ -23,6 +23,25 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
 
             snapshot.documents.mapNotNull { document ->
                 document.toObject(ActivityModel::class.java)?.copy(id = document.id)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    override suspend fun getActivitiesForMonth(userId: String, year: Int, month: Int): List<ActivityModel> {
+        return try {
+            val snapshot = firestore.collection("activities")
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { document ->
+                document.toObject(ActivityModel::class.java)?.copy(id = document.id)
+            }.filter { activity ->
+                val activityDate = LocalDate.parse(activity.date, DateTimeFormatter.ISO_LOCAL_DATE)
+                activityDate.year == year && activityDate.monthValue == month
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -39,16 +58,15 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
     ) {
         try {
             val activityData = hashMapOf(
-                "userId" to userId, // ¡Importante! Añadir el ID del usuario al documento
+                "userId" to userId,
                 "title" to title,
                 "description" to description,
                 "date" to date.format(DateTimeFormatter.ISO_LOCAL_DATE),
                 "startTime" to time?.format(DateTimeFormatter.ofPattern("HH:mm")),
-                "endTime" to null, // Puedes ajustar esto si lo necesitas
-                "type" to "TASK" // Tipo por defecto, puedes ajustarlo
+                "endTime" to null,
+                "type" to "TASK"
             )
 
-            // Apunta a la colección principal 'activities'
             firestore.collection("activities")
                 .add(activityData)
                 .await()

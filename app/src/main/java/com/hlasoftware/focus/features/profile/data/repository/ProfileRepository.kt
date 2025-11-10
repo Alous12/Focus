@@ -1,24 +1,26 @@
 package com.hlasoftware.focus.features.profile.data.repository
 
+import android.net.Uri
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 class ProfileRepository(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth // Mantenido por consistencia con DI, aunque no se use directamente
+    private val auth: FirebaseAuth, 
+    private val storage: FirebaseStorage, 
 ): IProfileRepository {
 
     override suspend fun fetchData(userId: String): Result<ProfileModel> {
-        // Manejar el caso de un ID de usuario vacío
         if (userId.isBlank()) {
             return Result.failure(IllegalArgumentException("User ID cannot be blank."))
         }
 
         return try {
-            // Usar el userId pasado como parámetro para la consulta
             val documentReference = firestore.collection("users").document(userId)
             val documentSnapshot = documentReference.get().await()
 
@@ -35,5 +37,36 @@ class ProfileRepository(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override suspend fun updateSummary(userId: String, summary: String): Result<Unit> {
+        if (userId.isBlank()) {
+            return Result.failure(IllegalArgumentException("User ID cannot be blank."))
+        }
+        return try {
+            firestore.collection("users").document(userId).update("summary", summary).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun updateProfilePicture(userId: String, imageUri: Uri): Result<Unit> {
+        if (userId.isBlank()) {
+            return Result.failure(IllegalArgumentException("User ID cannot be blank."))
+        }
+        return try {
+            val photoUrl = uploadProfileImage(userId, imageUri)
+            firestore.collection("users").document(userId).update("pathUrl", photoUrl).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun uploadProfileImage(userId: String, uri: Uri): String {
+        val storageRef = storage.reference.child("profile_pictures/$userId")
+        storageRef.putFile(uri).await()
+        return storageRef.downloadUrl.await().toString()
     }
 }
