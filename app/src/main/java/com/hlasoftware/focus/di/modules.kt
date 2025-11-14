@@ -4,6 +4,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepository
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepositoryImpl
+import com.hlasoftware.focus.features.add_routines.domain.usecase.AddRoutineUseCase
+import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineViewModel
 import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import com.hlasoftware.focus.features.home.presentation.HomeViewModel
@@ -14,6 +16,10 @@ import com.hlasoftware.focus.features.profile.application.ProfileViewModel
 import com.hlasoftware.focus.features.profile.data.repository.ProfileRepository
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
+import com.hlasoftware.focus.features.routines.data.repository.RoutineRepositoryImpl
+import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
+import com.hlasoftware.focus.features.routines.domain.usecase.GetRoutinesUseCase
+import com.hlasoftware.focus.features.routines.presentation.RoutinesViewModel
 import com.hlasoftware.focus.features.signup.data.repository.SignUpRepositoryImpl
 import com.hlasoftware.focus.features.signup.domain.repository.SignUpRepository
 import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
@@ -25,7 +31,6 @@ val appModule = module {
     single { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
     viewModel { LoginViewModel(get()) }
-
 
     single<IProfileRepository> { ProfileRepository(
         firestore = get(),
@@ -40,9 +45,17 @@ val appModule = module {
     factory { SignUpUseCase(get()) }
     viewModel { SignUpViewModel(get()) }
 
-
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { CreateActivityViewModel(get(), get()) }
+
+    // Routines
+    single<RoutineRepository> { RoutineRepositoryImpl(get(), get()) }
+    factory { GetRoutinesUseCase(get()) }
+    viewModel { RoutinesViewModel(get()) }
+
+    // Add Routine
+    factory { AddRoutineUseCase(get()) }
+    viewModel { AddRoutineViewModel(get()) }
 }

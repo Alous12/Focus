@@ -11,7 +11,6 @@ val MidnightGreen = Color(0xFF0E3C4C)
 val MidnightGreenLight = Color(0xFF5A8A9B)
 val OrangeAccent = Color(0xFFF9A825) // Color for the Floating Action Button
 
-// Activity Indicator Colors
 val IndicatorClass = Color(0xFFE57373) // Light Red
 val IndicatorTask = Color(0xFFDCE775) // Lime Green
 val IndicatorMeeting = Color(0xFF64B5F6) // Light Blue

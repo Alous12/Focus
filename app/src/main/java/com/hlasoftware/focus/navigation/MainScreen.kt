@@ -31,8 +31,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineScreen
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
 import com.hlasoftware.focus.features.profile.application.ProfileScreen
+import com.hlasoftware.focus.features.routines.presentation.RoutinesScreen
 import java.time.LocalDate
 
 sealed class MainScreenTab(val route: String) {
@@ -40,6 +42,10 @@ sealed class MainScreenTab(val route: String) {
     object Profile : MainScreenTab("profile")
     object WorkGroups : MainScreenTab("work_groups")
     object Routines : MainScreenTab("routines")
+}
+
+object ScreenRoutes {
+    const val AddRoutine = "add_routine"
 }
 
 enum class BottomNavItem(
@@ -60,44 +66,48 @@ fun MainScreen(userId: String) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    
-    // Estado para controlar la visibilidad del BottomSheet
+
     var showAddActivitySheet by remember { mutableStateOf(false) }
+
+    val topLevelDestinations = BottomNavItem.entries.map { it.screen.route }
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                BottomNavItem.entries.forEach { item ->
-                    NavigationBarItem(
-                        icon = {
-                            Icon(
-                                imageVector = if (currentDestination?.hierarchy?.any { it.route == item.screen.route } == true) {
-                                    item.selectedIcon
-                                } else {
-                                    item.unselectedIcon
-                                },
-                                contentDescription = item.label
-                            )
-                        },
-                        label = { Text(item.label) },
-                        selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true,
-                        onClick = {
-                            navController.navigate(item.screen.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            // Solo muestra la barra de navegación si estamos en un destino de nivel superior
+            if (currentDestination?.route in topLevelDestinations) {
+                NavigationBar {
+                    BottomNavItem.entries.forEach { item ->
+                        NavigationBarItem(
+                            icon = {
+                                Icon(
+                                    imageVector = if (currentDestination?.hierarchy?.any { it.route == item.screen.route } == true) {
+                                        item.selectedIcon
+                                    } else {
+                                        item.unselectedIcon
+                                    },
+                                    contentDescription = item.label
+                                )
+                            },
+                            label = { Text(item.label) },
+                            selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true,
+                            onClick = {
+                                navController.navigate(item.screen.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         },
         floatingActionButton = {
             if (currentDestination?.route == MainScreenTab.Home.route) {
                 FloatingActionButton(
-                    onClick = { showAddActivitySheet = true }, // Muestra el BottomSheet
+                    onClick = { showAddActivitySheet = true },
                     containerColor = MaterialTheme.colorScheme.primary,
                 ) {
                     Icon(
@@ -114,17 +124,31 @@ fun MainScreen(userId: String) {
             startDestination = MainScreenTab.Home.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(MainScreenTab.Home.route) { 
+            composable(MainScreenTab.Home.route) {
                 HomeScreen(
-                    userId = userId, 
+                    userId = userId,
                     selectedDate = selectedDate,
                     onDateChange = { newDate -> selectedDate = newDate },
-                    showAddActivitySheet = showAddActivitySheet, // Pasa el estado
-                    onDismissAddActivitySheet = { showAddActivitySheet = false } // Pasa la lambda para cerrarlo
+                    showAddActivitySheet = showAddActivitySheet,
+                    onDismissAddActivitySheet = { showAddActivitySheet = false }
                 )
             }
             composable(MainScreenTab.Profile.route) { ProfileScreen(userId = userId) }
-            // TODO: Add other composables for WorkGroups and Routines
+
+            // Navegación para Rutinas
+            composable(MainScreenTab.Routines.route) {
+                RoutinesScreen(
+                    onAddRoutine = { navController.navigate(ScreenRoutes.AddRoutine) }
+                )
+            }
+
+            // Pantalla para añadir rutina
+            composable(ScreenRoutes.AddRoutine) {
+                AddRoutineScreen(
+                    onClose = { navController.popBackStack() }
+                )
+            }
+            // TODO: Add other composables for WorkGroups
         }
     }
 }
