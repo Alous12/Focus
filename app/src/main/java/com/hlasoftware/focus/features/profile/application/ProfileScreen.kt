@@ -38,6 +38,7 @@ import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.posts.domain.model.PostModel
 import com.hlasoftware.focus.features.posts.presentation.CreatePostScreen
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
+import com.hlasoftware.focus.features.routines.domain.model.Routine
 import com.kizitonwose.calendar.compose.HorizontalCalendar
 import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
@@ -58,6 +59,19 @@ enum class ProfileTab(val title: Int) {
     CALENDAR(R.string.profile_tab_calendar)
 }
 
+enum class EventType {
+    ACTIVITY,
+    ROUTINE
+}
+
+data class CalendarEvent(
+    val title: String,
+    val description: String,
+    val startTime: String?,
+    val date: LocalDate,
+    val type: EventType
+)
+
 @Composable
 fun ProfileScreen(
     userId: String,
@@ -67,6 +81,7 @@ fun ProfileScreen(
     val state by profileViewModel.state.collectAsState()
     val activities by profileViewModel.activities.collectAsState()
     val posts by profileViewModel.posts.collectAsState()
+    val routines by profileViewModel.routines.collectAsState()
     var selectedTab by remember { mutableStateOf(ProfileTab.INFO) }
     var editingPost by remember { mutableStateOf<PostModel?>(null) }
     var showCreatePostScreen by remember { mutableStateOf(false) }
@@ -167,9 +182,10 @@ fun ProfileScreen(
                                                 onDeletePost = { profileViewModel.deletePost(it) }
                                             )
                                             ProfileTab.CALENDAR -> CalendarContent(
-                                                userId,
-                                                profileViewModel,
-                                                activities
+                                                userId = userId,
+                                                viewModel = profileViewModel,
+                                                activities = activities,
+                                                routines = routines
                                             )
                                         }
                                     }
@@ -508,7 +524,12 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
 
 
 @Composable
-fun CalendarContent(userId: String, viewModel: ProfileViewModel, activities: List<ActivityModel>) {
+fun CalendarContent(
+    userId: String, 
+    viewModel: ProfileViewModel,
+    activities: List<ActivityModel>,
+    routines: List<Routine>
+) {
     val currentMonth = YearMonth.now()
     val startMonth = currentMonth.minusMonths(100)
     val endMonth = currentMonth.plusMonths(100)
@@ -519,17 +540,53 @@ fun CalendarContent(userId: String, viewModel: ProfileViewModel, activities: Lis
         firstVisibleMonth = currentMonth,
         firstDayOfWeek = firstDayOfWeek
     )
-    val activitiesByDate = remember(activities) { activities.groupBy { LocalDate.parse(it.date) } }
-    var showActivityDialog by remember { mutableStateOf<List<ActivityModel>>(emptyList()) }
+    
+    val eventsByDate = remember(activities, routines) {
+        val activityEvents = activities.map {
+            CalendarEvent(
+                title = it.title,
+                description = it.description,
+                startTime = it.startTime,
+                date = LocalDate.parse(it.date),
+                type = EventType.ACTIVITY
+            )
+        }
+        val dayMap = mapOf(
+            "LUN" to DayOfWeek.MONDAY,
+            "MAR" to DayOfWeek.TUESDAY,
+            "MIE" to DayOfWeek.WEDNESDAY,
+            "JUE" to DayOfWeek.THURSDAY,
+            "VIE" to DayOfWeek.FRIDAY,
+            "SAB" to DayOfWeek.SATURDAY,
+            "DOM" to DayOfWeek.SUNDAY
+        )
+        val routineEvents = routines.flatMap { routine ->
+            val routineDays = routine.days.mapNotNull { day -> dayMap[day.uppercase()] }
+            state.startMonth.atDay(1).datesUntil(state.endMonth.atEndOfMonth()).filter { date ->
+                date.dayOfWeek in routineDays
+            }.map {
+                CalendarEvent(
+                    title = routine.name,
+                    description = routine.description ?: "",
+                    startTime = routine.startTime,
+                    date = it,
+                    type = EventType.ROUTINE
+                )
+            }.toList()
+        }
+        (activityEvents + routineEvents).groupBy { it.date }
+    }
+
+    var showDetailsDialog by remember { mutableStateOf<List<CalendarEvent>>(emptyList()) }
 
     LaunchedEffect(state.firstVisibleMonth) {
         val visibleMonth = state.firstVisibleMonth.yearMonth
         viewModel.loadActivitiesForMonth(userId, visibleMonth.year, visibleMonth.monthValue)
     }
 
-    if (showActivityDialog.isNotEmpty()) {
-        ActivityDetailsDialog(activities = showActivityDialog) {
-            showActivityDialog = emptyList()
+    if (showDetailsDialog.isNotEmpty()) {
+        EventDetailsDialog(events = showDetailsDialog) {
+            showDetailsDialog = emptyList()
         }
     }
 
@@ -537,10 +594,10 @@ fun CalendarContent(userId: String, viewModel: ProfileViewModel, activities: Lis
         HorizontalCalendar(
             state = state,
             dayContent = { day ->
-                val dayActivities = activitiesByDate[day.date].orEmpty()
-                Day(day, activities = dayActivities) {
-                    if (dayActivities.isNotEmpty()) {
-                        showActivityDialog = dayActivities
+                val dayEvents = eventsByDate[day.date].orEmpty()
+                Day(day, events = dayEvents) {
+                    if (dayEvents.isNotEmpty()) {
+                        showDetailsDialog = dayEvents
                     }
                 }
             },
@@ -551,11 +608,15 @@ fun CalendarContent(userId: String, viewModel: ProfileViewModel, activities: Lis
     }
 }
 
-
 @Composable
-fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) -> Unit) {
-    val hasActivity = activities.isNotEmpty()
+fun Day(day: CalendarDay, events: List<CalendarEvent>, onClick: (LocalDate) -> Unit) {
+    val hasEvent = events.isNotEmpty()
     val isToday = day.date == LocalDate.now() && day.position == DayPosition.MonthDate
+    val backgroundColor = when {
+        events.any { it.type == EventType.ROUTINE } -> colorResource(id = R.color.calendar_day_with_routine)
+        events.any { it.type == EventType.ACTIVITY } -> colorResource(id = R.color.calendar_day_with_activity)
+        else -> Color.Transparent
+    }
 
     Column(
         modifier = Modifier
@@ -567,9 +628,7 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
                 color = if (isToday) MaterialTheme.colorScheme.primary else Color.Transparent,
                 shape = CircleShape
             )
-            .background(
-                color = if (hasActivity) colorResource(id = R.color.calendar_day_with_activity) else Color.Transparent
-            )
+            .background(color = backgroundColor)
             .clickable(enabled = day.position == DayPosition.MonthDate) {
                 onClick(day.date)
             },
@@ -578,13 +637,13 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
     ) {
         Text(
             text = day.date.dayOfMonth.toString(),
-            color = if (hasActivity) colorResource(id = R.color.calendar_day_text_with_activity) else if (day.position == DayPosition.MonthDate) colorResource(id = R.color.calendar_day_text_no_activity_in_month) else colorResource(id = R.color.calendar_day_text_not_in_month),
+            color = if (hasEvent) colorResource(id = R.color.calendar_day_text_with_activity) else if (day.position == DayPosition.MonthDate) colorResource(id = R.color.calendar_day_text_no_activity_in_month) else colorResource(id = R.color.calendar_day_text_not_in_month),
             fontSize = 12.sp,
             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
         )
-        if (hasActivity) {
+        if (hasEvent) {
             Text(
-                text = activities.first().title,
+                text = events.first().title,
                 color = colorResource(id = R.color.calendar_day_text_with_activity),
                 fontSize = 8.sp,
                 maxLines = 1,
@@ -620,18 +679,18 @@ fun MonthHeader(yearMonth: YearMonth) {
 }
 
 @Composable
-fun ActivityDetailsDialog(activities: List<ActivityModel>, onDismiss: () -> Unit) {
+fun EventDetailsDialog(events: List<CalendarEvent>, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(id = R.string.profile_calendar_activity_details_title)) },
         text = {
             LazyColumn {
-                items(activities) { activity ->
+                items(events) { event ->
                     Column(modifier = Modifier.padding(vertical = 8.dp)) {
-                        Text(text = activity.title, fontWeight = FontWeight.Bold)
+                        Text(text = event.title, fontWeight = FontWeight.Bold)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(text = activity.description)
-                        activity.startTime?.let {
+                        Text(text = event.description)
+                        event.startTime?.let {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(text = "Hora: $it", style = MaterialTheme.typography.bodySmall)
                         }
@@ -646,3 +705,4 @@ fun ActivityDetailsDialog(activities: List<ActivityModel>, onDismiss: () -> Unit
         }
     )
 }
+

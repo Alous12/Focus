@@ -49,7 +49,7 @@ val appModule = module {
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { DeleteAccountUseCase(get()) }
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } 
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } 
 
     single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
     single { FirebaseAuth.getInstance() }

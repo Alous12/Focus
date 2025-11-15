@@ -25,6 +25,7 @@
     <!-- ProfileScreen -->
     <color name="profile_no_description_gray">#99FFFFFF</color>
     <color name="calendar_day_with_activity">#FF388E3C</color>
+    <color name="calendar_day_with_routine">#B3E5FC</color>
     <color name="calendar_day_text_with_activity">#FFFFFFFF</color>
     <color name="calendar_day_text_no_activity_in_month">#FF000000</color>
     <color name="calendar_day_text_not_in_month">#FF808080</color>
