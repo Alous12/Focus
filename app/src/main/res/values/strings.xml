@@ -1,3 +1,109 @@
 <resources>
     <string name="app_name">focus</string>
+
+    <!-- HomeScreen -->
+    <string name="home_title">Actividades</string>
+    <string name="home_no_activities">No hay actividades para este día.</string>
+    <string name="home_error_message">Error: %1$s</string>
+
+    <!-- AddActivityContent -->
+    <string name="add_activity_close">Cerrar</string>
+    <string name="add_activity_create">Crear</string>
+    <string name="add_activity_name_label">Nombre de la Actividad</string>
+    <string name="add_activity_description_label">Descripción de la Actividad</string>
+    <string name="add_activity_select_date_time">Selecciona la fecha y hora</string>
+    <string name="add_activity_date_label">Fecha</string>
+    <string name="add_activity_time_label">Hora</string>
+    <string name="add_activity_optional_time">Definir el horario es opcional, puedes no escoger hora.</string>
+    <string name="add_activity_time_placeholder">--:--</string>
+
+    <!-- DateSelector -->
+    <string name="date_selector_previous_day">Día anterior</string>
+    <string name="date_selector_next_day">Día siguiente</string>
+    <string name="date_format">EEEE, d \'de\' MMMM</string>
+
+    <!-- ActivityCard -->
+    <string name="activity_card_options">Opciones</string>
+    <string name="activity_start_end_time">%1$s - %2$s</string>
+
+    <!-- LoginScreen -->
+    <string name="login_title">Inicia Sesión</string>
+    <string name="login_email_label">Ingresa tu número o correo electrónico</string>
+    <string name="login_password_label">Ingresa tu contraseña</string>
+    <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
+    <string name="login_button">Inicia Sesión</string>
+    <string name="login_social_prompt">ó inicia sesión con</string>
+    <string name="login_no_account">¿No tienes una cuenta? </string>
+    <string name="login_register">Regístrate</string>
+    <string name="login_toggle_password_visibility">Toggle password visibility</string>
+
+    <!-- CreatePostScreen -->
+    <string name="create_post_title">Crear Post</string>
+    <string name="edit_post_title">Editar Post</string>
+    <string name="create_post_back_button">Atrás</string>
+    <string name="create_post_save_button">Guardar</string>
+    <string name="create_post_placeholder">Escribe algo...</string>
+    <string name="create_post_selected_image">Imagen seleccionada</string>
+    <string name="create_post_select_image_button">Seleccionar imagen</string>
+
+    <!-- SignUpScreen -->
+    <string name="signup_title">Regístrate</string>
+    <string name="signup_name_label">Ingresa tu nombre completo</string>
+    <string name="signup_birthdate_label">Ingresa tu fecha de nacimiento</string>
+    <string name="signup_select_date_button">Seleccionar fecha</string>
+    <string name="signup_email_label">Ingresa tu número o correo electrónico</string>
+    <string name="signup_password_label">Ingresa tu contraseña</string>
+    <string name="signup_confirm_password_label">Confirma tu contraseña</string>
+    <string name="signup_toggle_password_visibility">Toggle password visibility</string>
+    <string name="signup_toggle_confirm_password_visibility">Toggle confirm password visibility</string>
+    <string name="signup_success_message">¡Registro exitoso!</string>
+    <string name="signup_button">Regístrate</string>
+    <string name="signup_social_prompt">ó regístrate con</string>
+    <string name="signup_has_account">¿Ya tienes una cuenta? </string>
+    <string name="signup_login">Inicia Sesión</string>
+    <string name="datepicker_ok">OK</string>
+    <string name="datepicker_cancel">Cancelar</string>
+
+    <!-- ProfileScreen -->
+    <string name="profile_title">Perfil</string>
+    <string name="profile_menu">Menú</string>
+    <string name="profile_drawer_title">Configuración</string>
+    <string name="profile_drawer_delete_account">Eliminar cuenta</string>
+    <string name="profile_drawer_logout">Cerrar sesión</string>
+    <string name="profile_tab_info">Información</string>
+    <string name="profile_tab_posts">Posts</string>
+    <string name="profile_tab_calendar">Calendario</string>
+    <string name="profile_header_photo_description">Foto de perfil</string>
+    <string name="profile_info_name">Nombre: %1$s</string>
+    <string name="profile_info_email">Email: %1$s</string>
+    <string name="profile_info_no_description">No hay descripción disponible.</string>
+    <string name="profile_info_edit_description">Editar descripción</string>
+    <string name="profile_info_add_description">Añadir descripción</string>
+    <string name="profile_info_change_photo">Cambiar foto</string>
+    <string name="profile_edit_dialog_title">Actualizar Descripción</string>
+    <string name="profile_edit_dialog_new_value">Nuevo valor</string>
+    <string name="profile_edit_dialog_save">Guardar</string>
+    <string name="profile_edit_dialog_cancel">Cancelar</string>
+    <string name="profile_posts_create_post">Crear post</string>
+    <string name="profile_posts_no_posts">No hay posts para mostrar.</string>
+    <string name="profile_post_item_image_description">Post image</string>
+    <string name="profile_post_item_created">Creado: %1$s</string>
+    <string name="profile_post_item_edited">Editado: %1$s</string>
+    <string name="profile_post_item_edit">Editar</string>
+    <string name="profile_post_item_delete">Eliminar</string>
+    <string name="profile_calendar_activity_details_title">Actividades del Día</string>
+    <string name="profile_calendar_activity_details_close">Cerrar</string>
+
+    <!-- ForgotPasswordScreen -->
+    <string name="forgot_password_title">¿Olvidaste tu Contraseña?</string>
+    <string name="forgot_password_back_button">Volver</string>
+    <string name="forgot_password_email_label">Email de Registro</string>
+    <string name="forgot_password_recover_button">Recuperar Contraseña</string>
+    <string name="forgot_password_success_message">¡Correo de recuperación enviado!</string>
+
+    <!-- Delete Account Dialog -->
+    <string name="delete_account_dialog_title">¿Está seguro de eliminar su cuenta?</string>
+    <string name="delete_account_dialog_no">No</string>
+    <string name="delete_account_dialog_yes">Si</string>
+
 </resources>

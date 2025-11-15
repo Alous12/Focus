@@ -34,18 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
-import com.hlasoftware.focus.ui.theme.IndicatorClass
-import com.hlasoftware.focus.ui.theme.IndicatorMeeting
-import com.hlasoftware.focus.ui.theme.IndicatorTask
 import org.koin.androidx.compose.koinViewModel
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.Calendar
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +68,16 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
+            Text(
+                text = stringResource(id = R.string.home_title),
+                style = MaterialTheme.typography.headlineLarge,
+                color = colorResource(id = R.color.title_color),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             DateSelector(
                 currentDate = selectedDate,
                 onPreviousDay = { onDateChange(selectedDate.minusDays(1)) },
@@ -91,7 +99,10 @@ fun HomeScreen(
                                 .padding(horizontal = 16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("No hay actividades para este día.", color = MaterialTheme.colorScheme.onBackground)
+                            Text(
+                                text = stringResource(id = R.string.home_no_activities),
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
                         }
                     } else {
                         ActivitiesList(
@@ -105,7 +116,7 @@ fun HomeScreen(
                 is HomeUiState.Error -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = "Error: ${state.message}",
+                            text = stringResource(id = R.string.home_error_message, state.message),
                             color = MaterialTheme.colorScheme.error
                         )
                     }
@@ -142,10 +153,9 @@ fun AddActivityContent(
 
     val context = LocalContext.current
 
-    // --- Date Picker Dialog ---
     val datePickerDialog = android.app.DatePickerDialog(
         context,
-        { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
+        { _, year: Int, month: Int, dayOfMonth: Int ->
             date = LocalDate.of(year, month + 1, dayOfMonth)
         },
         date.year,
@@ -153,7 +163,6 @@ fun AddActivityContent(
         date.dayOfMonth
     )
 
-    // --- Time Picker Dialog ---
     val timePickerDialog = TimePickerDialog(
         context,
         { _, hour: Int, minute: Int ->
@@ -175,7 +184,7 @@ fun AddActivityContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onClose) {
-                Icon(Icons.Default.Close, contentDescription = "Cerrar")
+                Icon(Icons.Default.Close, contentDescription = stringResource(id = R.string.add_activity_close))
             }
             TextButton(
                 onClick = {
@@ -184,7 +193,10 @@ fun AddActivityContent(
                 },
                 enabled = title.isNotBlank()
             ) {
-                Text("Crear", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(
+                    text = stringResource(id = R.string.add_activity_create),
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
@@ -192,18 +204,21 @@ fun AddActivityContent(
         OutlinedTextField(
             value = title,
             onValueChange = { title = it },
-            label = { Text("Nombre de la Actividad") },
+            label = { Text(stringResource(id = R.string.add_activity_name_label)) },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = description,
             onValueChange = { description = it },
-            label = { Text("Descripcion de la Actividad") },
+            label = { Text(stringResource(id = R.string.add_activity_description_label)) },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
-        Text("Selecciona la fecha y hora", fontWeight = FontWeight.Bold)
+        Text(
+            text = stringResource(id = R.string.add_activity_select_date_time),
+            fontWeight = FontWeight.Bold
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
@@ -212,31 +227,30 @@ fun AddActivityContent(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically, 
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { datePickerDialog.show() }
             ) {
-                Icon(Icons.Default.CalendarToday, contentDescription = "Fecha")
+                Icon(Icons.Default.CalendarToday, contentDescription = stringResource(id = R.string.add_activity_date_label))
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(date.format(DateTimeFormatter.ofPattern("dd/MM/yy")))
             }
             Row(
-                verticalAlignment = Alignment.CenterVertically, 
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.clickable { timePickerDialog.show() }
             ) {
-                Icon(Icons.Default.AccessTime, contentDescription = "Hora")
+                Icon(Icons.Default.AccessTime, contentDescription = stringResource(id = R.string.add_activity_time_label))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: "--:--")
+                Text(time?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: stringResource(id = R.string.add_activity_time_placeholder))
             }
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Definir el horario es opcional, puedes no escoger hora.",
+            text = stringResource(id = R.string.add_activity_optional_time),
             style = MaterialTheme.typography.bodySmall,
-            color = Color.Gray
+            color = colorResource(id = R.color.optional_text_gray)
         )
     }
 }
-
 
 @Composable
 fun DateSelector(
@@ -244,7 +258,7 @@ fun DateSelector(
     onPreviousDay: () -> Unit,
     onNextDay: () -> Unit
 ) {
-    val formatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
+    val formatter = DateTimeFormatter.ofPattern(stringResource(id = R.string.date_format), Locale("es", "ES"))
     val formattedDate = currentDate.format(formatter).replaceFirstChar { it.titlecase(Locale.getDefault()) }
 
     Row(
@@ -257,11 +271,23 @@ fun DateSelector(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onPreviousDay) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBackIos, contentDescription = "Día anterior", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBackIos,
+                contentDescription = stringResource(id = R.string.date_selector_previous_day),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
-        Text(formattedDate, color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
+        Text(
+            text = formattedDate,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
+            fontWeight = FontWeight.Bold
+        )
         IconButton(onClick = onNextDay) {
-            Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "Día siguiente", tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowForwardIos,
+                contentDescription = stringResource(id = R.string.date_selector_next_day),
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
     }
 }
@@ -289,10 +315,10 @@ fun ActivitiesList(
 @Composable
 fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
     val indicatorColor = when (activity.type) {
-        "CLASS" -> IndicatorClass
-        "TASK" -> IndicatorTask
-        "MEETING" -> IndicatorMeeting
-        else -> Color.Gray
+        "CLASS" -> colorResource(id = R.color.indicator_class)
+        "TASK" -> colorResource(id = R.color.indicator_task)
+        "MEETING" -> colorResource(id = R.color.indicator_meeting)
+        else -> colorResource(id = R.color.indicator_default)
     }
 
     Card(
@@ -321,8 +347,9 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 activity.startTime?.let {
+                    val endTimeText = activity.endTime?.let { e -> stringResource(id = R.string.activity_start_end_time, it, e) } ?: it
                     Text(
-                        text = "${activity.startTime}${activity.endTime?.let { e -> " - $e" } ?: ""}",
+                        text = endTimeText,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                     )
@@ -331,7 +358,7 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
             IconButton(onClick = onOptionsClicked) {
                 Icon(
                     imageVector = Icons.Default.MoreVert,
-                    contentDescription = "Opciones",
+                    contentDescription = stringResource(id = R.string.activity_card_options),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,12 +21,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.posts.domain.model.PostModel
 import com.hlasoftware.focus.features.posts.presentation.CreatePostScreen
@@ -35,25 +43,26 @@ import com.kizitonwose.calendar.compose.rememberCalendarState
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.time.format.TextStyle
 import java.util.Locale
 
-enum class ProfileTab(val title: String) {
-    INFO("Información"),
-    POSTS("Posts"),
-    CALENDAR("Calendario")
+enum class ProfileTab(val title: Int) {
+    INFO(R.string.profile_tab_info),
+    POSTS(R.string.profile_tab_posts),
+    CALENDAR(R.string.profile_tab_calendar)
 }
 
 @Composable
 fun ProfileScreen(
     userId: String,
     profileViewModel: ProfileViewModel = koinViewModel(),
+    onLogout: () -> Unit,
 ) {
     val state by profileViewModel.state.collectAsState()
     val activities by profileViewModel.activities.collectAsState()
@@ -61,6 +70,10 @@ fun ProfileScreen(
     var selectedTab by remember { mutableStateOf(ProfileTab.INFO) }
     var editingPost by remember { mutableStateOf<PostModel?>(null) }
     var showCreatePostScreen by remember { mutableStateOf(false) }
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(userId) {
         if (userId.isNotBlank()) {
@@ -90,69 +103,204 @@ fun ProfileScreen(
             onCancel = onCancel
         )
     } else {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            when (val currentState = state) {
-                is ProfileViewModel.ProfileUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-                is ProfileViewModel.ProfileUiState.Success -> {
-                    ProfileHeader(
-                        profile = currentState.profile,
-                        selectedTab = selectedTab,
-                        onTabSelected = { selectedTab = it }
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(modifier = Modifier.weight(1f)) {
-                        when (selectedTab) {
-                            ProfileTab.INFO -> InfoContent(
-                                profile = currentState.profile,
-                                userId = userId,
-                                profileViewModel = profileViewModel
-                            )
-                            ProfileTab.POSTS -> PostsContent(
-                                posts = posts,
-                                onCreatePost = { showCreatePostScreen = true },
-                                onEditPost = { editingPost = it },
-                                onDeletePost = { profileViewModel.deletePost(it) }
-                            )
-                            ProfileTab.CALENDAR -> CalendarContent(
-                                userId,
-                                profileViewModel,
-                                activities
-                            )
-                        }
-                    }
-                }
-                is ProfileViewModel.ProfileUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            currentState.message,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.padding(16.dp)
+        CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = {
+                    CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                        DrawerContent(
+                            onCloseDrawer = { scope.launch { drawerState.close() } },
+                            onLogout = onLogout,
+                            onDeleteAccount = { showDeleteAccountDialog = true }
                         )
                     }
                 }
-                ProfileViewModel.ProfileUiState.Init -> {}
+            ) {
+                CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.background)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp, start = 16.dp, end = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.profile_title),
+                                style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                                color = colorResource(id = R.color.title_color),
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { scope.launch { drawerState.open() } }) {
+                                Icon(Icons.Default.Menu, contentDescription = stringResource(id = R.string.profile_menu))
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        when (val currentState = state) {
+                            is ProfileViewModel.ProfileUiState.Loading -> {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    CircularProgressIndicator()
+                                }
+                            }
+                            is ProfileViewModel.ProfileUiState.Success -> {
+                                Column(Modifier.fillMaxSize()) {
+                                    ProfileHeader(
+                                        profile = currentState.profile,
+                                        selectedTab = selectedTab,
+                                        onTabSelected = { selectedTab = it }
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        when (selectedTab) {
+                                            ProfileTab.INFO -> InfoContent(
+                                                profile = currentState.profile,
+                                                userId = userId,
+                                                profileViewModel = profileViewModel
+                                            )
+                                            ProfileTab.POSTS -> PostsContent(
+                                                posts = posts,
+                                                onCreatePost = { showCreatePostScreen = true },
+                                                onEditPost = { editingPost = it },
+                                                onDeletePost = { profileViewModel.deletePost(it) }
+                                            )
+                                            ProfileTab.CALENDAR -> CalendarContent(
+                                                userId,
+                                                profileViewModel,
+                                                activities
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            is ProfileViewModel.ProfileUiState.Error -> {
+                                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                    Text(
+                                        currentState.message,
+                                        color = MaterialTheme.colorScheme.error,
+                                        modifier = Modifier.padding(16.dp)
+                                    )
+                                }
+                            }
+                            ProfileViewModel.ProfileUiState.Init -> {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDeleteAccountDialog) {
+        DeleteAccountDialog(
+            onConfirm = {
+                profileViewModel.deleteAccount(userId) {
+                    showDeleteAccountDialog = false
+                    onLogout()
+                }
+            },
+            onDismiss = { showDeleteAccountDialog = false }
+        )
+    }
+}
+
+@Composable
+fun DrawerContent(onCloseDrawer: () -> Unit, onLogout: () -> Unit, onDeleteAccount: () -> Unit) {
+    ModalDrawerSheet(
+        modifier = Modifier.fillMaxWidth(0.75f)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(16.dp)
+        ) {
+            Text(
+                stringResource(id = R.string.profile_drawer_title),
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = colorResource(id = R.color.title_color)
+            )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(id = R.string.profile_drawer_delete_account),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable(onClick = onDeleteAccount)
+            )
+            Spacer(Modifier.weight(1f))
+            TextButton(onClick = onLogout) {
+                Text(
+                    stringResource(id = R.string.profile_drawer_logout),
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold, 
+                    fontSize = 16.sp
+                )
             }
         }
     }
 }
 
 @Composable
+fun DeleteAccountDialog(onConfirm: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = stringResource(id = R.string.delete_account_dialog_title),
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    lineHeight = 1.em,
+                    textAlign = TextAlign.Center,
+                    color = Color.White
+                )
+            )
+        },
+        text = {
+                 Row(
+                     modifier = Modifier.fillMaxWidth(),
+                     horizontalArrangement = Arrangement.SpaceEvenly
+                 ) {
+                     Button(
+                         onClick = onDismiss,
+                         colors = ButtonDefaults.buttonColors(
+                             containerColor = colorResource(id = R.color.delete_account_no_button)
+                         )
+                     ) {
+                         Text(
+                             stringResource(id = R.string.delete_account_dialog_no),
+                             color = Color.White
+                         )
+                     }
+                     Button(
+                         onClick = onConfirm,
+                         colors = ButtonDefaults.buttonColors(
+                             containerColor = colorResource(id = R.color.delete_account_yes_button)
+                         )
+                     ) {
+                         Text(
+                             stringResource(id = R.string.delete_account_dialog_yes),
+                             color = Color.White
+                         )
+                     }
+                 }
+        },
+        confirmButton = {},
+        dismissButton = {}
+    )
+}
+
+
+@Composable
 fun ProfileHeader(profile: ProfileModel, selectedTab: ProfileTab, onTabSelected: (ProfileTab) -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         AsyncImage(
             model = profile.pathUrl,
-            contentDescription = "Foto de perfil",
+            contentDescription = stringResource(id = R.string.profile_header_photo_description),
             modifier = Modifier
                 .size(100.dp)
                 .clip(CircleShape)
@@ -179,7 +327,7 @@ fun ProfileTabBar(selectedTab: ProfileTab, onTabSelected: (ProfileTab) -> Unit) 
                     contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             ) {
-                Text(tab.title)
+                Text(stringResource(id = tab.title))
             }
         }
     }
@@ -200,7 +348,7 @@ fun InfoContent(profile: ProfileModel, userId: String, profileViewModel: Profile
 
     if (showSummaryDialog) {
         EditDialog(
-            title = "Actualizar Descripción",
+            title = stringResource(id = R.string.profile_edit_dialog_title),
             initialValue = profile.summary,
             onConfirm = { newSummary ->
                 profileViewModel.updateSummary(userId, newSummary)
@@ -214,25 +362,25 @@ fun InfoContent(profile: ProfileModel, userId: String, profileViewModel: Profile
         modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 16.dp),
         horizontalAlignment = Alignment.Start
     ) {
-        Text("Nombre: ${profile.name}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(id = R.string.profile_info_name, profile.name), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Email: ${profile.email}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        Text(stringResource(id = R.string.profile_info_email, profile.email), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(24.dp))
 
         if (profile.summary.isNotBlank()) {
             Text(text = profile.summary, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onBackground)
         } else {
-            Text(text = "No hay descripción disponible.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+            Text(text = stringResource(id = R.string.profile_info_no_description), style = MaterialTheme.typography.bodyLarge, color = colorResource(id = R.color.profile_no_description_gray))
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             Button(onClick = { showSummaryDialog = true }) {
-                Text(if (profile.summary.isNotBlank()) "Editar descripción" else "Añadir descripción")
+                Text(if (profile.summary.isNotBlank()) stringResource(id = R.string.profile_info_edit_description) else stringResource(id = R.string.profile_info_add_description))
             }
             Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-                Text("Cambiar foto")
+                Text(stringResource(id = R.string.profile_info_change_photo))
             }
         }
     }
@@ -250,17 +398,17 @@ fun EditDialog(title: String, initialValue: String, onConfirm: (String) -> Unit,
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("Nuevo valor") }
+                label = { Text(stringResource(id = R.string.profile_edit_dialog_new_value)) }
             )
         },
         confirmButton = {
             Button(onClick = { onConfirm(text) }) {
-                Text("Guardar")
+                Text(stringResource(id = R.string.profile_edit_dialog_save))
             }
         },
         dismissButton = {
             Button(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(stringResource(id = R.string.profile_edit_dialog_cancel))
             }
         }
     )
@@ -277,7 +425,7 @@ fun PostsContent(
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(onClick = onCreatePost) {
-                Icon(Icons.Default.Add, contentDescription = "Crear post")
+                Icon(Icons.Default.Add, contentDescription = stringResource(id = R.string.profile_posts_create_post))
             }
         }
     ) { padding ->
@@ -287,9 +435,9 @@ fun PostsContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No hay posts para mostrar.",
+                    text = stringResource(id = R.string.profile_posts_no_posts),
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    color = colorResource(id = R.color.profile_no_description_gray)
                 )
             }
         } else {
@@ -317,7 +465,7 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
             post.imageUrl?.let {
                 AsyncImage(
                     model = it,
-                    contentDescription = "Post image",
+                    contentDescription = stringResource(id = R.string.profile_post_item_image_description),
                     modifier = Modifier.fillMaxWidth().height(200.dp),
                     contentScale = ContentScale.Crop
                 )
@@ -329,7 +477,7 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
             val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
             post.createdAt?.let {
                 Text(
-                    text = "Creado: ${dateFormat.format(it)}",
+                    text = stringResource(id = R.string.profile_post_item_created, dateFormat.format(it)),
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -337,7 +485,7 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
             post.updatedAt?.let {
                 if (it != post.createdAt) {
                     Text(
-                        text = "Editado: ${dateFormat.format(it)}",
+                        text = stringResource(id = R.string.profile_post_item_edited, dateFormat.format(it)),
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
@@ -348,10 +496,10 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
                 horizontalArrangement = Arrangement.End
             ) {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar")
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(id = R.string.profile_post_item_edit))
                 }
                 Button(onClick = onDelete, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)) {
-                    Text("Eliminar")
+                    Text(stringResource(id = R.string.profile_post_item_delete))
                 }
             }
         }
@@ -420,7 +568,7 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
                 shape = CircleShape
             )
             .background(
-                color = if (hasActivity) Color(0xFF388E3C) else Color.Transparent
+                color = if (hasActivity) colorResource(id = R.color.calendar_day_with_activity) else Color.Transparent
             )
             .clickable(enabled = day.position == DayPosition.MonthDate) {
                 onClick(day.date)
@@ -430,14 +578,14 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
     ) {
         Text(
             text = day.date.dayOfMonth.toString(),
-            color = if (hasActivity) Color.White else if (day.position == DayPosition.MonthDate) MaterialTheme.colorScheme.onBackground else Color.Gray,
+            color = if (hasActivity) colorResource(id = R.color.calendar_day_text_with_activity) else if (day.position == DayPosition.MonthDate) colorResource(id = R.color.calendar_day_text_no_activity_in_month) else colorResource(id = R.color.calendar_day_text_not_in_month),
             fontSize = 12.sp,
             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
         )
         if (hasActivity) {
             Text(
                 text = activities.first().title,
-                color = Color.White,
+                color = colorResource(id = R.color.calendar_day_text_with_activity),
                 fontSize = 8.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -465,7 +613,7 @@ fun MonthHeader(yearMonth: YearMonth) {
             Text(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                text = dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()),
+                text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
             )
         }
     }
@@ -475,7 +623,7 @@ fun MonthHeader(yearMonth: YearMonth) {
 fun ActivityDetailsDialog(activities: List<ActivityModel>, onDismiss: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Actividades del Día") },
+        title = { Text(stringResource(id = R.string.profile_calendar_activity_details_title)) },
         text = {
             LazyColumn {
                 items(activities) { activity ->
@@ -493,7 +641,7 @@ fun ActivityDetailsDialog(activities: List<ActivityModel>, onDismiss: () -> Unit
         },
         confirmButton = {
             Button(onClick = onDismiss) {
-                Text("Cerrar")
+                Text(stringResource(id = R.string.profile_calendar_activity_details_close))
             }
         }
     )

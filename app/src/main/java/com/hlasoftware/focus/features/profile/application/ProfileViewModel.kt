@@ -11,13 +11,13 @@ import com.hlasoftware.focus.features.posts.domain.usecase.DeletePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.GetPostsUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
+import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
@@ -28,6 +28,7 @@ class ProfileViewModel(
     private val createPostUseCase: CreatePostUseCase,
     private val updatePostUseCase: UpdatePostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
 ) : ViewModel() {
 
     sealed class ProfileUiState {
@@ -105,6 +106,14 @@ class ProfileViewModel(
     fun deletePost(postId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             deletePostUseCase(postId)
+        }
+    }
+
+    fun deleteAccount(userId: String, onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteAccountUseCase(userId).onSuccess {
+                onComplete()
+            }
         }
     }
 }

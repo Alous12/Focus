@@ -17,7 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -65,7 +67,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(130.dp))
 
             Text(
-                text = "Regístrate",
+                text = stringResource(id = R.string.signup_title),
                 color = Color.White,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -77,18 +79,18 @@ fun SignUpScreen(
                 focusedContainerColor = Color.Transparent,
                 disabledContainerColor = Color.Transparent,
                 focusedIndicatorColor = Color.White,
-                unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
+                unfocusedIndicatorColor = colorResource(id = R.color.login_indicator_gray),
                 cursorColor = Color.White
             )
             val lineTextStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp)
             val lineLabelStyle: @Composable (String) -> (@Composable () -> Unit) = { label ->
-                { Text(label, color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) }
+                { Text(label, color = colorResource(id = R.color.login_label_gray), fontSize = 16.sp) }
             }
 
             TextField(
                 value = uiState.name,
                 onValueChange = viewModel::onNameChanged,
-                label = lineLabelStyle("Ingresa tu nombre completo"),
+                label = lineLabelStyle(stringResource(id = R.string.signup_name_label)),
                 singleLine = true,
                 colors = lineTextFieldColors,
                 textStyle = lineTextStyle,
@@ -100,14 +102,14 @@ fun SignUpScreen(
                 value = uiState.birthdate,
                 onValueChange = {},
                 readOnly = true,
-                label = lineLabelStyle("Ingresa tu fecha de nacimiento"),
+                label = lineLabelStyle(stringResource(id = R.string.signup_birthdate_label)),
                 singleLine = true,
                 colors = lineTextFieldColors,
                 textStyle = lineTextStyle,
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Filled.CalendarMonth,
-                        contentDescription = "Seleccionar fecha",
+                        contentDescription = stringResource(id = R.string.signup_select_date_button),
                         tint = Color.LightGray,
                         modifier = Modifier.clickable { showDatePicker = true }
                     )
@@ -119,7 +121,7 @@ fun SignUpScreen(
             TextField(
                 value = uiState.email,
                 onValueChange = viewModel::onEmailChanged,
-                label = lineLabelStyle("Ingresa tu número o correo electrónico"),
+                label = lineLabelStyle(stringResource(id = R.string.signup_email_label)),
                 singleLine = true,
                 colors = lineTextFieldColors,
                 textStyle = lineTextStyle,
@@ -130,14 +132,14 @@ fun SignUpScreen(
             TextField(
                 value = uiState.password,
                 onValueChange = viewModel::onPasswordChanged,
-                label = lineLabelStyle("Ingresa tu contraseña"),
+                label = lineLabelStyle(stringResource(id = R.string.signup_password_label)),
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
                         Icon(
                             imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = "Toggle password visibility",
+                            contentDescription = stringResource(id = R.string.signup_toggle_password_visibility),
                             tint = Color.LightGray
                         )
                     }
@@ -151,14 +153,14 @@ fun SignUpScreen(
             TextField(
                 value = uiState.confirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChanged,
-                label = lineLabelStyle("Confirma tu contraseña"),
+                label = lineLabelStyle(stringResource(id = R.string.signup_confirm_password_label)),
                 singleLine = true,
                 visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                         Icon(
                             imageVector = if (confirmPasswordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
-                            contentDescription = "Toggle confirm password visibility",
+                            contentDescription = stringResource(id = R.string.signup_toggle_confirm_password_visibility),
                             tint = Color.LightGray
                         )
                     }
@@ -173,7 +175,7 @@ fun SignUpScreen(
                 Text(errorMessage, color = MaterialTheme.colorScheme.error, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
             if (uiState.success) {
-                Text("¡Registro exitoso!", color = Color.Green, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                Text(stringResource(id = R.string.signup_success_message), color = Color.Green, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
             }
 
             Button(
@@ -188,7 +190,7 @@ fun SignUpScreen(
                 if (uiState.loading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text("Regístrate", fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(id = R.string.signup_button), fontSize = 18.sp, color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -202,18 +204,18 @@ fun SignUpScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.2f)
+                    color = colorResource(id = R.color.login_divider_gray)
                 )
                 Text(
-                    "ó regístrate con",
-                    color = Color.LightGray.copy(alpha = 0.5f),
+                    stringResource(id = R.string.signup_social_prompt),
+                    color = colorResource(id = R.color.login_indicator_gray),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.2f)
+                    color = colorResource(id = R.color.login_divider_gray)
                 )
             }
 
@@ -232,24 +234,24 @@ fun SignUpScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 50.dp).clickable { onBackClicked() }
             ) {
                 Text(
-                    "¿Ya tienes una cuenta? ",
-                    color = Color.White.copy(alpha = 0.7f),
+                    stringResource(id = R.string.signup_has_account),
+                    color = colorResource(id = R.color.login_no_account_gray),
                     fontSize = 16.sp
                 )
+                Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    "Inicia Sesión",
-                    color = Color.White,
-                    fontWeight = FontWeight.ExtraBold,
+                    stringResource(id = R.string.signup_login),
+                    color = colorResource(id = R.color.title_color),
                     fontSize = 16.sp
                 )
             }
         }
     }
 
-    // --- Date Picker Dialog ---
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState()
         DatePickerDialog(
@@ -264,12 +266,12 @@ fun SignUpScreen(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(id = R.string.datepicker_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancelar")
+                    Text(stringResource(id = R.string.datepicker_cancel))
                 }
             }
         ) {
