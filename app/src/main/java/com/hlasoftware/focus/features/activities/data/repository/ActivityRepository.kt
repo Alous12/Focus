@@ -6,6 +6,7 @@ import java.time.LocalTime
 
 interface ActivityRepository {
     suspend fun getActivities(userId: String, date: LocalDate): List<ActivityModel>
+    suspend fun getActivitiesForMonth(userId: String, year: Int, month: Int): List<ActivityModel>
     suspend fun createActivity(
         userId: String,
         title: String,
