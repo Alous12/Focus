@@ -118,10 +118,17 @@ fun RoutineItem(routine: Routine) {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val color = try {
-                Color(android.graphics.Color.parseColor(routine.color))
-            } catch (e: IllegalArgumentException) {
-                MaterialTheme.colorScheme.primary // Fallback color
+            val color = when (routine.color) {
+                is Long -> Color(routine.color.toInt()) // Firestore returns Ints as Longs
+                is Int -> Color(routine.color) 
+                is String -> {
+                    try {
+                        Color(android.graphics.Color.parseColor(routine.color))
+                    } catch (e: Exception) {
+                        MaterialTheme.colorScheme.primary // Fallback for invalid string
+                    }
+                }
+                else -> MaterialTheme.colorScheme.primary // Fallback for any other type
             }
 
             Box(

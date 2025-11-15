@@ -76,8 +76,7 @@ fun AddRoutineScreen(
                 actions = {
                     TextButton(onClick = {
                         val selectedDays = days.filter { it.value }.keys.toList()
-                        val colorHex = "#%06X".format(0xFFFFFF and selectedColor.toArgb())
-                        viewModel.createRoutine(routineName, description, selectedDays, startTime, endTime, colorHex)
+                        viewModel.createRoutine(routineName, description, selectedDays, startTime, endTime, selectedColor.toArgb())
                     }) {
                         Text("Crear", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 16.sp)
                     }
