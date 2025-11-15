@@ -531,7 +531,7 @@ fun CalendarContent(
     routines: List<Routine>
 ) {
     val currentMonth = YearMonth.now()
-    val startMonth = currentMonth.minusMonths(100)
+    val startMonth = currentMonth
     val endMonth = currentMonth.plusMonths(100)
     val firstDayOfWeek = firstDayOfWeekFromLocale()
     val state = rememberCalendarState(
@@ -542,6 +542,7 @@ fun CalendarContent(
     )
     
     val eventsByDate = remember(activities, routines) {
+        val today = LocalDate.now()
         val activityEvents = activities.map {
             CalendarEvent(
                 title = it.title,
@@ -550,7 +551,7 @@ fun CalendarContent(
                 date = LocalDate.parse(it.date),
                 type = EventType.ACTIVITY
             )
-        }
+        }.filter { !it.date.isBefore(today) }
         val dayMap = mapOf(
             "LUN" to DayOfWeek.MONDAY,
             "MAR" to DayOfWeek.TUESDAY,
@@ -562,9 +563,9 @@ fun CalendarContent(
         )
         val routineEvents = routines.flatMap { routine ->
             val routineDays = routine.days.mapNotNull { day -> dayMap[day.uppercase()] }
-            state.startMonth.atDay(1).datesUntil(state.endMonth.atEndOfMonth()).filter { date ->
+            today.datesUntil(state.endMonth.atEndOfMonth()).filter { date ->
                 date.dayOfWeek in routineDays
-            }.map {
+            }.map { 
                 CalendarEvent(
                     title = routine.name,
                     description = routine.description ?: "",
@@ -664,7 +665,8 @@ fun MonthHeader(yearMonth: YearMonth) {
         Text(
             text = formatter.format(yearMonth),
             fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
+            fontSize = 20.sp,
+            color = Color.White
         )
     }
     Row(Modifier.fillMaxWidth()) {
@@ -673,6 +675,7 @@ fun MonthHeader(yearMonth: YearMonth) {
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
                 text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
+                color = Color.White
             )
         }
     }
