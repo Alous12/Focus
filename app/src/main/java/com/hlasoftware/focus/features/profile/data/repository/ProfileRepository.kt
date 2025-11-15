@@ -7,7 +7,6 @@ import com.google.firebase.storage.FirebaseStorage
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import kotlinx.coroutines.tasks.await
-import java.util.UUID
 
 class ProfileRepository(
     private val firestore: FirebaseFirestore,
@@ -58,6 +57,19 @@ class ProfileRepository(
         return try {
             val photoUrl = uploadProfileImage(userId, imageUri)
             firestore.collection("users").document(userId).update("pathUrl", photoUrl).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun deleteAccount(userId: String): Result<Unit> {
+        if (userId.isBlank()) {
+            return Result.failure(IllegalArgumentException("User ID cannot be blank."))
+        }
+        return try {
+            firestore.collection("users").document(userId).delete().await()
+            auth.currentUser?.delete()?.await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

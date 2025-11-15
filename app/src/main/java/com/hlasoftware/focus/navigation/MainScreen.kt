@@ -61,7 +61,7 @@ enum class BottomNavItem(
 }
 
 @Composable
-fun MainScreen(userId: String) {
+fun MainScreen(userId: String, onLogout: () -> Unit) {
     val navController = rememberNavController()
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -133,7 +133,7 @@ fun MainScreen(userId: String) {
                     onDismissAddActivitySheet = { showAddActivitySheet = false }
                 )
             }
-            composable(MainScreenTab.Profile.route) { ProfileScreen(userId = userId) }
+
 
             // Navegación para Rutinas
             composable(MainScreenTab.Routines.route) {
@@ -149,6 +149,8 @@ fun MainScreen(userId: String) {
                 )
             }
             // TODO: Add other composables for WorkGroups
+            composable(MainScreenTab.Profile.route) { ProfileScreen(userId = userId, onLogout = onLogout) }
+            // TODO: Add other composables for WorkGroups and Routines
         }
     }
 }

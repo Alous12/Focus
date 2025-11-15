@@ -22,6 +22,7 @@ import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
 import com.hlasoftware.focus.features.profile.application.ProfileViewModel
 import com.hlasoftware.focus.features.profile.data.repository.ProfileRepository
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
+import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
 import com.hlasoftware.focus.features.routines.data.repository.RoutineRepositoryImpl
 import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
@@ -47,7 +48,8 @@ val appModule = module {
     )}
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get()) } 
+    factory { DeleteAccountUseCase(get()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } 
 
     single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
     single { FirebaseAuth.getInstance() }
