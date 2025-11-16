@@ -38,6 +38,7 @@ import com.hlasoftware.focus.features.activity_details.presentation.ActivityDeta
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
 import com.hlasoftware.focus.features.profile.application.ProfileScreen
 import com.hlasoftware.focus.features.routines.presentation.RoutinesScreen
+import com.hlasoftware.focus.features.workgroups.presentation.WorkgroupsScreen
 import java.time.LocalDate
 
 sealed class MainScreenTab(val route: String) {
@@ -74,12 +75,12 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
     val currentDestination = navBackStackEntry?.destination
 
     var showAddActivitySheet by remember { mutableStateOf(false) }
+    var showCreateWorkgroupSheet by remember { mutableStateOf(false) }
 
     val topLevelDestinations = BottomNavItem.entries.map { it.screen.route }
 
     Scaffold(
         bottomBar = {
-            // Solo muestra la barra de navegación si estamos en un destino de nivel superior
             if (currentDestination?.route in topLevelDestinations) {
                 NavigationBar {
                     BottomNavItem.entries.forEach { item ->
@@ -154,6 +155,15 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                 )
             }
 
+            composable(MainScreenTab.WorkGroups.route) {
+                WorkgroupsScreen(
+                    userId = userId,
+                    showCreateWorkgroupSheet = showCreateWorkgroupSheet,
+                    onDismissCreateWorkgroupSheet = { showCreateWorkgroupSheet = false },
+                    onAddWorkgroup = { showCreateWorkgroupSheet = true }
+                )
+            }
+
             // Navegación para Rutinas
             composable(MainScreenTab.Routines.route) {
                 RoutinesScreen(
@@ -167,9 +177,8 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                     onClose = { navController.popBackStack() }
                 )
             }
-            // TODO: Add other composables for WorkGroups
+            
             composable(MainScreenTab.Profile.route) { ProfileScreen(userId = userId, onLogout = onLogout) }
-            // TODO: Add other composables for WorkGroups and Routines
         }
     }
 }
