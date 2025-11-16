@@ -2,7 +2,6 @@ package com.hlasoftware.focus.features.login.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,7 +14,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -28,7 +29,6 @@ import com.hlasoftware.focus.features.login.domain.model.UserModel
 import com.hlasoftware.focus.ui.theme.AuthBackground
 import com.hlasoftware.focus.ui.theme.MidnightGreen
 import com.hlasoftware.focus.ui.theme.component.BackgroundShapes
-import androidx.compose.ui.text.TextStyle
 
 @Composable
 fun LoginScreen(
@@ -51,10 +51,8 @@ fun LoginScreen(
             .fillMaxSize()
             .background(AuthBackground)
     ) {
-        // CAPA 1: Formas de fondo
         BackgroundShapes(modifier = Modifier.fillMaxSize())
 
-        // CAPA 2: Contenido de la UI
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -65,25 +63,24 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(130.dp))
 
             Text(
-                text = "Inicia Sesión",
+                text = stringResource(id = R.string.login_title),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
                 modifier = Modifier.padding(bottom = 50.dp)
             )
 
-            // --- CAMPO EMAIL/NÚMERO ---
             TextField(
                 value = uiState.email,
                 onValueChange = vm::onEmailChanged,
-                label = { Text("Ingresa tu número o correo electrónico", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) },
-                singleLine = true, // CORREGIDO: Evita el salto de línea
+                label = { Text(stringResource(id = R.string.login_email_label), color = colorResource(id = R.color.login_label_gray), fontSize = 16.sp) },
+                singleLine = true,
                 colors = TextFieldDefaults.colors(
                     unfocusedContainerColor = Color.Transparent,
                     focusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
+                    unfocusedIndicatorColor = colorResource(id = R.color.login_indicator_gray),
                     cursorColor = Color.White
                 ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp),
@@ -92,12 +89,11 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // --- CAMPO CONTRASEÑA ---
             TextField(
                 value = uiState.password,
                 onValueChange = vm::onPasswordChanged,
-                label = { Text("Ingresa tu contraseña", color = Color.LightGray.copy(alpha = 0.7f), fontSize = 16.sp) },
-                singleLine = true, // Añadido por consistencia
+                label = { Text(stringResource(id = R.string.login_password_label), color = colorResource(id = R.color.login_label_gray), fontSize = 16.sp) },
+                singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     val image = if (passwordVisible)
@@ -105,7 +101,7 @@ fun LoginScreen(
                     else Icons.Filled.VisibilityOff
 
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector  = image, contentDescription = "Toggle password visibility", tint = Color.LightGray)
+                        Icon(imageVector  = image, contentDescription = stringResource(id = R.string.login_toggle_password_visibility), tint = colorResource(id = R.color.login_forgot_password_gray))
                     }
                 },
                 colors = TextFieldDefaults.colors(
@@ -113,7 +109,7 @@ fun LoginScreen(
                     focusedContainerColor = Color.Transparent,
                     disabledContainerColor = Color.Transparent,
                     focusedIndicatorColor = Color.White,
-                    unfocusedIndicatorColor = Color.LightGray.copy(alpha = 0.5f),
+                    unfocusedIndicatorColor = colorResource(id = R.color.login_indicator_gray),
                     cursorColor = Color.White
                 ),
                 textStyle = LocalTextStyle.current.copy(color = Color.White, fontSize = 16.sp),
@@ -122,15 +118,14 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Texto "¿Olvidaste tu contraseña?" alineado a la derecha
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 TextButton(onClick = onForgotPasswordClicked, contentPadding = PaddingValues(0.dp)) {
                     Text(
-                        "¿Olvidaste tu contraseña?",
-                        color = Color.LightGray,
+                        stringResource(id = R.string.login_forgot_password),
+                        color = colorResource(id = R.color.login_forgot_password_gray),
                         fontSize = 14.sp
                     )
                 }
@@ -138,7 +133,6 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // --- BOTÓN INICIA SESIÓN ---
             Button(
                 onClick = { vm.login() },
                 enabled = !uiState.loading,
@@ -152,7 +146,7 @@ fun LoginScreen(
                     CircularProgressIndicator(color = Color.White)
                 } else {
                     Text(
-                        "Inicia Sesión",
+                        stringResource(id = R.string.login_button),
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -161,16 +155,14 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            uiState.error?.let { error ->
+            uiState.error?.let {
                 Text(
-                    error,
+                    it,
                     color = MaterialTheme.colorScheme.error
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            // --- SECCIÓN SOCIAL ---
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -180,12 +172,12 @@ fun LoginScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.2f)
+                    color = colorResource(id = R.color.login_divider_gray)
                 )
 
                 Text(
-                    "ó inicia sesión con",
-                    color = Color.LightGray.copy(alpha = 0.5f),
+                    stringResource(id = R.string.login_social_prompt),
+                    color = colorResource(id = R.color.login_indicator_gray),
                     fontSize = 14.sp,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
@@ -193,11 +185,10 @@ fun LoginScreen(
                 HorizontalDivider(
                     modifier = Modifier.weight(1f),
                     thickness = 1.dp,
-                    color = Color.LightGray.copy(alpha = 0.2f)
+                    color = colorResource(id = R.color.login_divider_gray)
                 )
             }
 
-            // Iconos sociales
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -214,18 +205,19 @@ fun LoginScreen(
 
             Row(
                 horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 50.dp)
             ) {
                 Text(
-                    "¿No tienes una cuenta? ",
-                    color = Color.White.copy(alpha = 0.7f),
+                    stringResource(id = R.string.login_no_account),
+                    color = colorResource(id = R.color.login_no_account_gray),
                     fontSize = 16.sp
                 )
+                Spacer(modifier = Modifier.width(4.dp))
                 TextButton(onClick = onSignUpClicked, contentPadding = PaddingValues(0.dp)) {
                     Text(
-                        "Regístrate",
-                        color = Color.White,
-                        fontWeight = FontWeight.ExtraBold,
+                        stringResource(id = R.string.login_register),
+                        color = colorResource(id = R.color.title_color),
                         fontSize = 16.sp
                     )
                 }

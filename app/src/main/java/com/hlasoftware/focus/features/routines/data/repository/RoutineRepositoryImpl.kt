@@ -25,7 +25,6 @@ class RoutineRepositoryImpl(
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
-                    // Manually map documents to include the ID
                     val routines = snapshot.documents.mapNotNull {
                         it.toObject(Routine::class.java)?.copy(id = it.id)
                     }
@@ -39,9 +38,10 @@ class RoutineRepositoryImpl(
 
     override suspend fun addRoutine(routine: Routine): Result<Unit> {
         return try {
-            // Add the routine and copy the current user's ID into the document
+            // Create a copy of the routine with the correct userId before saving
+            val routineWithUser = routine.copy(userId = userId)
             firestore.collection("users").document(userId).collection("routines")
-                .add(routine.copy(userId = userId)).await()
+                .add(routineWithUser).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

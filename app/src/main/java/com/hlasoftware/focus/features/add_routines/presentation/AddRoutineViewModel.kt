@@ -27,7 +27,7 @@ class AddRoutineViewModel(private val addRoutineUseCase: AddRoutineUseCase) : Vi
         days: List<String>,
         startTime: String?,
         endTime: String?,
-        colorHex: String
+        color: Int
     ) {
         if (name.isBlank()) {
             _uiState.value = AddRoutineUiState.Error("El nombre no puede estar vacío")
@@ -46,7 +46,7 @@ class AddRoutineViewModel(private val addRoutineUseCase: AddRoutineUseCase) : Vi
                 days = days,
                 startTime = startTime,
                 endTime = endTime,
-                color = colorHex
+                color = color
             )
             addRoutineUseCase(routine)
                 .onSuccess { _uiState.value = AddRoutineUiState.Success }

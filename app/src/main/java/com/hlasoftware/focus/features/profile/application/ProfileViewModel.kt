@@ -11,13 +11,15 @@ import com.hlasoftware.focus.features.posts.domain.usecase.DeletePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.GetPostsUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
+import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
+import com.hlasoftware.focus.features.routines.domain.model.Routine
+import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
@@ -28,6 +30,8 @@ class ProfileViewModel(
     private val createPostUseCase: CreatePostUseCase,
     private val updatePostUseCase: UpdatePostUseCase,
     private val deletePostUseCase: DeletePostUseCase,
+    private val deleteAccountUseCase: DeleteAccountUseCase,
+    private val routineRepository: RoutineRepository,
 ) : ViewModel() {
 
     sealed class ProfileUiState {
@@ -46,17 +50,29 @@ class ProfileViewModel(
     private val _posts = MutableStateFlow<List<PostModel>>(emptyList())
     val posts: StateFlow<List<PostModel>> = _posts.asStateFlow()
 
+    private val _routines = MutableStateFlow<List<Routine>>(emptyList())
+    val routines: StateFlow<List<Routine>> = _routines.asStateFlow()
+
     fun showProfile(userId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = ProfileUiState.Loading
             val resultProfile = getProfileUseCase.invoke(userId)
             resultProfile.fold(
-                onSuccess = { 
+                onSuccess = {
                     _state.value = ProfileUiState.Success(it)
                     loadPosts(userId)
+                    loadRoutines()
                  },
                 onFailure = { _state.value = ProfileUiState.Error(it.message ?: "Ocurrió un error desconocido") }
             )
+        }
+    }
+
+    private fun loadRoutines() {
+        viewModelScope.launch {
+            routineRepository.getRoutines().collect {
+                _routines.value = it
+            }
         }
     }
 
@@ -105,6 +121,14 @@ class ProfileViewModel(
     fun deletePost(postId: String) {
         viewModelScope.launch(Dispatchers.IO) {
             deletePostUseCase(postId)
+        }
+    }
+
+    fun deleteAccount(userId: String, onComplete: () -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteAccountUseCase(userId).onSuccess {
+                onComplete()
+            }
         }
     }
 }

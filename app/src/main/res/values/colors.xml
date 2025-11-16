@@ -7,4 +7,31 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Custom Colors -->
+    <color name="indicator_class">#4CAF50</color>
+    <color name="indicator_task">#F44336</color>
+    <color name="indicator_meeting">#2196F3</color>
+    <color name="indicator_default">#808080</color> <!-- Gray -->
+    <color name="optional_text_gray">#808080</color> <!-- Gray -->
+
+    <!-- LoginScreen -->
+    <color name="login_label_gray">#B3D3D3D3</color>
+    <color name="login_indicator_gray">#80D3D3D3</color>
+    <color name="login_forgot_password_gray">#FFD3D3D3</color>
+    <color name="login_divider_gray">#33D3D3D3</color>
+    <color name="login_no_account_gray">#B3FFFFFF</color>
+
+    <!-- ProfileScreen -->
+    <color name="profile_no_description_gray">#99FFFFFF</color>
+    <color name="calendar_day_with_activity">#FF388E3C</color>
+    <color name="calendar_day_with_routine">#B3E5FC</color>
+    <color name="calendar_day_text_with_activity">#FFFFFFFF</color>
+    <color name="calendar_day_text_no_activity_in_month">#FFFFFFFF</color>
+    <color name="calendar_day_text_not_in_month">#99FFFFFF</color>
+
+    <color name="title_color">#5A8A9B</color>
+    <color name="delete_account_no_button">#F45B69</color>
+    <color name="delete_account_yes_button">#5A8A9B</color>
+
 </resources>

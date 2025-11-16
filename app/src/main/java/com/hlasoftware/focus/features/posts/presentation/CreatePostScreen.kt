@@ -10,8 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.posts.domain.model.PostModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,15 +37,15 @@ fun CreatePostScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (existingPost == null) "Crear Post" else "Editar Post") },
+                title = { Text(stringResource(id = if (existingPost == null) R.string.create_post_title else R.string.edit_post_title)) },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(id = R.string.create_post_back_button))
                     }
                 },
                 actions = {
                     Button(onClick = { onSave(text, imageUri) }) {
-                        Text("Guardar")
+                        Text(stringResource(id = R.string.create_post_save_button))
                     }
                 }
             )
@@ -59,7 +61,7 @@ fun CreatePostScreen(
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth().weight(1f),
-                placeholder = { Text("Escribe algo...") }
+                placeholder = { Text(stringResource(id = R.string.create_post_placeholder)) }
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -67,7 +69,7 @@ fun CreatePostScreen(
             if (imageUrl != null) {
                 AsyncImage(
                     model = imageUrl,
-                    contentDescription = "Imagen seleccionada",
+                    contentDescription = stringResource(id = R.string.create_post_selected_image),
                     modifier = Modifier.fillMaxWidth().height(200.dp),
                     contentScale = ContentScale.Crop
                 )
@@ -75,7 +77,7 @@ fun CreatePostScreen(
             }
 
             Button(onClick = { imagePickerLauncher.launch("image/*") }) {
-                Text("Seleccionar imagen")
+                Text(stringResource(id = R.string.create_post_select_image_button))
             }
         }
     }
