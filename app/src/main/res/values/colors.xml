@@ -25,9 +25,10 @@
     <!-- ProfileScreen -->
     <color name="profile_no_description_gray">#99FFFFFF</color>
     <color name="calendar_day_with_activity">#FF388E3C</color>
+    <color name="calendar_day_with_routine">#B3E5FC</color>
     <color name="calendar_day_text_with_activity">#FFFFFFFF</color>
-    <color name="calendar_day_text_no_activity_in_month">#FF000000</color>
-    <color name="calendar_day_text_not_in_month">#FF808080</color>
+    <color name="calendar_day_text_no_activity_in_month">#FFFFFFFF</color>
+    <color name="calendar_day_text_not_in_month">#99FFFFFF</color>
 
     <color name="title_color">#5A8A9B</color>
     <color name="delete_account_no_button">#F45B69</color>

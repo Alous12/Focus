@@ -5,6 +5,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepository
 import com.hlasoftware.focus.features.activities.data.repository.ActivityRepositoryImpl
+import com.hlasoftware.focus.features.add_routines.domain.usecase.AddRoutineUseCase
+import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineViewModel
 import com.hlasoftware.focus.features.create_activity.presentation.CreateActivityViewModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import com.hlasoftware.focus.features.home.presentation.HomeViewModel
@@ -22,6 +24,10 @@ import com.hlasoftware.focus.features.profile.data.repository.ProfileRepository
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
+import com.hlasoftware.focus.features.routines.data.repository.RoutineRepositoryImpl
+import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
+import com.hlasoftware.focus.features.routines.domain.usecase.GetRoutinesUseCase
+import com.hlasoftware.focus.features.routines.presentation.RoutinesViewModel
 import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import com.hlasoftware.focus.features.signup.data.repository.SignUpRepositoryImpl
 import com.hlasoftware.focus.features.signup.domain.repository.SignUpRepository
@@ -43,7 +49,7 @@ val appModule = module {
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { DeleteAccountUseCase(get()) }
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get()) } 
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } 
 
     single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
     single { FirebaseAuth.getInstance() }
@@ -56,6 +62,15 @@ val appModule = module {
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }
     viewModel { CreateActivityViewModel(get(), get()) }
+
+    // Routines
+    single<RoutineRepository> { RoutineRepositoryImpl(get(), get()) }
+    factory { GetRoutinesUseCase(get()) }
+    viewModel { RoutinesViewModel(get()) }
+
+    // Add Routine
+    factory { AddRoutineUseCase(get()) }
+    viewModel { AddRoutineViewModel(get()) }
 
     single<IPostRepository> { PostRepositoryImpl(get(), get()) }
     factory { GetPostsUseCase(get()) }
