@@ -10,16 +10,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Article
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -52,10 +57,10 @@ import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-enum class ProfileTab(val title: Int) {
-    INFO(R.string.profile_tab_info),
-    POSTS(R.string.profile_tab_posts),
-    CALENDAR(R.string.profile_tab_calendar)
+enum class ProfileTab(val title: Int, val icon: ImageVector) {
+    INFO(R.string.profile_tab_info, Icons.Default.Info),
+    POSTS(R.string.profile_tab_posts, Icons.Default.Article),
+    CALENDAR(R.string.profile_tab_calendar, Icons.Default.CalendarToday)
 }
 
 @Composable
@@ -316,18 +321,34 @@ fun ProfileHeader(profile: ProfileModel, selectedTab: ProfileTab, onTabSelected:
 fun ProfileTabBar(selectedTab: ProfileTab, onTabSelected: (ProfileTab) -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ProfileTab.entries.forEach { tab ->
             val isSelected = tab == selectedTab
-            Button(
-                onClick = { onTabSelected(tab) },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+            Card(
+                modifier = Modifier.weight(1f).clickable { onTabSelected(tab) },
+                shape = RoundedCornerShape(32.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = colorResource(id = R.color.profile_tab_background)
                 )
             ) {
-                Text(stringResource(id = tab.title))
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp, horizontal = 8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = stringResource(id = tab.title),
+                        tint = if (isSelected) colorResource(id = R.color.title_color) else Color.White
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = stringResource(id = tab.title),
+                        color = if (isSelected) colorResource(id = R.color.title_color) else Color.White,
+                        fontSize = 12.sp
+                    )
+                }
             }
         }
     }
@@ -578,7 +599,7 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
     ) {
         Text(
             text = day.date.dayOfMonth.toString(),
-            color = if (hasActivity) colorResource(id = R.color.calendar_day_text_with_activity) else if (day.position == DayPosition.MonthDate) colorResource(id = R.color.calendar_day_text_no_activity_in_month) else colorResource(id = R.color.calendar_day_text_not_in_month),
+            color = if (hasActivity) colorResource(id = R.color.calendar_day_text_with_activity) else if (day.position == DayPosition.MonthDate) MaterialTheme.colorScheme.onBackground else colorResource(id = R.color.calendar_day_text_not_in_month),
             fontSize = 12.sp,
             fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal
         )
