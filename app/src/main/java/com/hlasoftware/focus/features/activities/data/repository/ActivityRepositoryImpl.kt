@@ -6,7 +6,6 @@ import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import kotlinx.coroutines.tasks.await
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : ActivityRepository {
@@ -72,6 +71,24 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
                 .await()
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    override suspend fun deleteActivity(activityId: String) {
+        try {
+            firestore.collection("activities").document(activityId).delete().await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    override suspend fun getActivityById(activityId: String): ActivityModel? {
+        return try {
+            val document = firestore.collection("activities").document(activityId).get().await()
+            document.toObject(ActivityModel::class.java)?.copy(id = document.id)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 }

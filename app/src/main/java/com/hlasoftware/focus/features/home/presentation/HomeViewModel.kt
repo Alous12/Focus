@@ -6,6 +6,7 @@ import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
@@ -23,6 +24,11 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState
+
+    private val _showDeleteConfirmationDialog = MutableStateFlow(false)
+    val showDeleteConfirmationDialog = _showDeleteConfirmationDialog.asStateFlow()
+
+    private var activityIdToDelete: String? = null
 
     fun loadHome(userId: String, date: LocalDate) {
         viewModelScope.launch {
@@ -54,8 +60,33 @@ class HomeViewModel(
         }
     }
 
-    // Función opcional para manejar opciones de cada actividad
     fun onActivityOptionsClicked(activityId: String) {
-        // Implementa lógica de opciones si deseas
+        // Not used yet, will be used to show the dropdown
+    }
+
+    fun onDeleteActivityClicked(activityId: String) {
+        activityIdToDelete = activityId
+        _showDeleteConfirmationDialog.value = true
+    }
+
+    fun onConfirmDeleteActivity(userId: String, date: LocalDate) {
+        activityIdToDelete?.let {
+            viewModelScope.launch {
+                try {
+                    homeUseCase.deleteActivity(it)
+                    loadHome(userId, date)
+                } catch (e: Exception) {
+                    _uiState.value = HomeUiState.Error(e.message ?: "Error eliminando la actividad")
+                } finally {
+                    _showDeleteConfirmationDialog.value = false
+                    activityIdToDelete = null
+                }
+            }
+        }
+    }
+
+    fun onDismissDeleteActivity() {
+        _showDeleteConfirmationDialog.value = false
+        activityIdToDelete = null
     }
 }

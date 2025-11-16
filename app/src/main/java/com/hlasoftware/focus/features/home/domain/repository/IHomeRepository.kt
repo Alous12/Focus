@@ -5,4 +5,5 @@ import java.time.LocalDate
 
 interface IHomeRepository {
     suspend fun getActivities(userId: String, date: LocalDate): List<ActivityModel>
+    suspend fun deleteActivity(activityId: String)
 }

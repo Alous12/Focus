@@ -25,6 +25,11 @@
     <!-- ActivityCard -->
     <string name="activity_card_options">Opciones</string>
     <string name="activity_start_end_time">%1$s - %2$s</string>
+    <string name="activity_card_delete">Eliminar actividad</string>
+
+    <!-- ActivityDetailsScreen -->
+    <string name="activity_details_title">Detalle de la Actividad</string>
+    <string name="activity_details_back_button">Volver</string>
 
     <!-- LoginScreen -->
     <string name="login_title">Inicia Sesión</string>
@@ -105,5 +110,10 @@
     <string name="delete_account_dialog_title">¿Está seguro de eliminar su cuenta?</string>
     <string name="delete_account_dialog_no">No</string>
     <string name="delete_account_dialog_yes">Si</string>
+
+    <!-- Delete Activity Dialog -->
+    <string name="delete_activity_dialog_title">¿Está seguro de eliminar esta actividad?</string>
+    <string name="delete_activity_dialog_no">No</string>
+    <string name="delete_activity_dialog_yes">Si</string>
 
 </resources>

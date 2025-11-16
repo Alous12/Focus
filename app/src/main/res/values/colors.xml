@@ -34,4 +34,6 @@
     <color name="delete_account_no_button">#F45B69</color>
     <color name="delete_account_yes_button">#5A8A9B</color>
 
+    <color name="delete_red">#F44336</color>
+
 </resources>

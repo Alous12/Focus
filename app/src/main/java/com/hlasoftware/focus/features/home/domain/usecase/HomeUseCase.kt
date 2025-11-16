@@ -20,4 +20,8 @@ class HomeUseCase(private val activityRepository: ActivityRepository) {
     ) {
         activityRepository.createActivity(userId, title, description, date, time)
     }
+
+    suspend fun deleteActivity(activityId: String) {
+        activityRepository.deleteActivity(activityId)
+    }
 }
