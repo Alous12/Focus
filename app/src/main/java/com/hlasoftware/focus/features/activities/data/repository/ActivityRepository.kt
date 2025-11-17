@@ -14,4 +14,6 @@ interface ActivityRepository {
         date: LocalDate,
         time: LocalTime?
     )
+    suspend fun deleteActivity(activityId: String)
+    suspend fun getActivityById(activityId: String): ActivityModel?
 }

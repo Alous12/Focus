@@ -9,4 +9,8 @@ class HomeRepositoryImpl(private val activityRepository: ActivityRepository) : I
     override suspend fun getActivities(userId: String, date: LocalDate): List<ActivityModel> {
         return activityRepository.getActivities(userId, date)
     }
+
+    override suspend fun deleteActivity(activityId: String) {
+        activityRepository.deleteActivity(activityId)
+    }
 }

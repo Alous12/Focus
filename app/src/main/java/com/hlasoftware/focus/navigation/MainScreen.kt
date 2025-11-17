@@ -27,14 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineScreen
+import com.hlasoftware.focus.features.activity_details.presentation.ActivityDetailsScreen
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
 import com.hlasoftware.focus.features.profile.application.ProfileScreen
 import com.hlasoftware.focus.features.routines.presentation.RoutinesScreen
+import com.hlasoftware.focus.features.workgroups.presentation.WorkgroupsScreen
 import java.time.LocalDate
 
 sealed class MainScreenTab(val route: String) {
@@ -46,6 +50,9 @@ sealed class MainScreenTab(val route: String) {
 
 object ScreenRoutes {
     const val AddRoutine = "add_routine"
+    const val ActivityDetails = "activity_details/{activityId}"
+
+    fun activityDetailsRoute(activityId: String) = "activity_details/$activityId"
 }
 
 enum class BottomNavItem(
@@ -68,12 +75,12 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
     val currentDestination = navBackStackEntry?.destination
 
     var showAddActivitySheet by remember { mutableStateOf(false) }
+    var showCreateWorkgroupSheet by remember { mutableStateOf(false) }
 
     val topLevelDestinations = BottomNavItem.entries.map { it.screen.route }
 
     Scaffold(
         bottomBar = {
-            // Solo muestra la barra de navegación si estamos en un destino de nivel superior
             if (currentDestination?.route in topLevelDestinations) {
                 NavigationBar {
                     BottomNavItem.entries.forEach { item ->
@@ -130,10 +137,32 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                     selectedDate = selectedDate,
                     onDateChange = { newDate -> selectedDate = newDate },
                     showAddActivitySheet = showAddActivitySheet,
-                    onDismissAddActivitySheet = { showAddActivitySheet = false }
+                    onDismissAddActivitySheet = { showAddActivitySheet = false },
+                    onActivityClick = { activityId ->
+                        navController.navigate(ScreenRoutes.activityDetailsRoute(activityId))
+                    }
                 )
             }
 
+            composable(
+                route = ScreenRoutes.ActivityDetails,
+                arguments = listOf(navArgument("activityId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val activityId = backStackEntry.arguments?.getString("activityId") ?: ""
+                ActivityDetailsScreen(
+                    activityId = activityId,
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(MainScreenTab.WorkGroups.route) {
+                WorkgroupsScreen(
+                    userId = userId,
+                    showCreateWorkgroupSheet = showCreateWorkgroupSheet,
+                    onDismissCreateWorkgroupSheet = { showCreateWorkgroupSheet = false },
+                    onAddWorkgroup = { showCreateWorkgroupSheet = true }
+                )
+            }
 
             // Navegación para Rutinas
             composable(MainScreenTab.Routines.route) {
@@ -148,9 +177,8 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                     onClose = { navController.popBackStack() }
                 )
             }
-            // TODO: Add other composables for WorkGroups
+            
             composable(MainScreenTab.Profile.route) { ProfileScreen(userId = userId, onLogout = onLogout) }
-            // TODO: Add other composables for WorkGroups and Routines
         }
     }
 }

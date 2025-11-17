@@ -1,4 +1,3 @@
-
 package com.hlasoftware.focus.features.create_activity.presentation
 
 import androidx.compose.foundation.clickable
@@ -19,6 +18,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -42,6 +42,18 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
+private object PresentOrFutureSelectableDates : SelectableDates {
+    override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+        // Allow selection of today and future dates.
+        return utcTimeMillis >= LocalDate.now().atStartOfDay(ZoneId.of("UTC")).toInstant().toEpochMilli()
+    }
+
+    override fun isSelectableYear(year: Int): Boolean {
+        return year >= LocalDate.now().year
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateActivityScreen(
     onDismiss: () -> Unit,
@@ -58,7 +70,8 @@ fun CreateActivityScreen(
 
     if (showDatePicker) {
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            initialSelectedDateMillis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            selectableDates = PresentOrFutureSelectableDates
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },

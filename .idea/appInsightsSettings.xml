@@ -2,5 +2,26 @@
 <project version="4">
   <component name="AppInsightsSettings">
     <option name="selectedTabId" value="Android Vitals" />
+    <option name="tabSettings">
+      <map>
+        <entry key="Firebase Crashlytics">
+          <value>
+            <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="com.hlasoftware.focus" />
+                  <option name="mobileSdkAppId" value="1:675190792491:android:861d746801f8ba0d2d256e" />
+                  <option name="projectId" value="focus-48ac3" />
+                  <option name="projectNumber" value="675190792491" />
+                </ConnectionSetting>
+              </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="THIRTY_DAYS" />
+              <option name="visibilityType" value="ALL" />
+            </InsightsFilterSettings>
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

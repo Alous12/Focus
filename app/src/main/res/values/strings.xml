@@ -25,6 +25,26 @@
     <!-- ActivityCard -->
     <string name="activity_card_options">Opciones</string>
     <string name="activity_start_end_time">%1$s - %2$s</string>
+    <string name="activity_card_delete">Eliminar actividad</string>
+
+    <!-- ActivityDetailsScreen -->
+    <string name="activity_details_title">Detalle de la Actividad</string>
+    <string name="activity_details_back_button">Volver</string>
+
+    <!-- WorkgroupsScreen -->
+    <string name="workgroups_title">Work Groups</string>
+    <string name="workgroups_add_button">Añadir grupo de trabajo</string>
+    <string name="workgroups_no_groups">No perteneces a ningún grupo de trabajo.</string>
+    <string name="workgroup_card_admin_label">Admin. %1$s</string>
+
+    <!-- CreateWorkgroupSheet -->
+    <string name="create_workgroup_title">Crear Grupo</string>
+    <string name="create_workgroup_close">Cerrar</string>
+    <string name="create_workgroup_image_prompt">Haz click para seleccionar una imagen para el Work Group</string>
+    <string name="create_workgroup_name_label">Nombre del Work Group</string>
+    <string name="create_workgroup_description_label">Descripcion del Work Group</string>
+    <string name="create_workgroup_add_members_button">Agregar Miembro/s</string>
+    <string name="create_workgroup_add_members_later_prompt">Si no agregas algún miembro ahora, podrás hacerlo después sin ningún problema.</string>
 
     <!-- LoginScreen -->
     <string name="login_title">Inicia Sesión</string>
@@ -105,5 +125,10 @@
     <string name="delete_account_dialog_title">¿Está seguro de eliminar su cuenta?</string>
     <string name="delete_account_dialog_no">No</string>
     <string name="delete_account_dialog_yes">Si</string>
+
+    <!-- Delete Activity Dialog -->
+    <string name="delete_activity_dialog_title">¿Está seguro de eliminar esta actividad?</string>
+    <string name="delete_activity_dialog_no">No</string>
+    <string name="delete_activity_dialog_yes">Si</string>
 
 </resources>

@@ -1,7 +1,6 @@
 package com.hlasoftware.focus.features.home.presentation
 
 import android.app.TimePickerDialog
-import android.widget.DatePicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -32,7 +31,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -54,12 +52,31 @@ fun HomeScreen(
     selectedDate: LocalDate,
     onDateChange: (LocalDate) -> Unit,
     showAddActivitySheet: Boolean,
-    onDismissAddActivitySheet: () -> Unit
+    onDismissAddActivitySheet: () -> Unit,
+    onActivityClick: (String) -> Unit
 ) {
     val uiState by homeViewModel.uiState.collectAsState()
+    val showDeleteDialog by homeViewModel.showDeleteConfirmationDialog.collectAsState()
 
     LaunchedEffect(userId, selectedDate) {
         homeViewModel.loadHome(userId, selectedDate)
+    }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { homeViewModel.onDismissDeleteActivity() },
+            title = { Text(stringResource(id = R.string.delete_activity_dialog_title)) },
+            confirmButton = {
+                TextButton(onClick = { homeViewModel.onConfirmDeleteActivity(userId, selectedDate) }) {
+                    Text(stringResource(id = R.string.delete_activity_dialog_yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { homeViewModel.onDismissDeleteActivity() }) {
+                    Text(stringResource(id = R.string.delete_activity_dialog_no))
+                }
+            }
+        )
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -107,9 +124,10 @@ fun HomeScreen(
                     } else {
                         ActivitiesList(
                             activities = state.activities,
-                            onOptionsClicked = { activityId ->
-                                homeViewModel.onActivityOptionsClicked(activityId)
-                            }
+                            onDeleteClicked = { activityId ->
+                                homeViewModel.onDeleteActivityClicked(activityId)
+                            },
+                            onActivityClicked = onActivityClick
                         )
                     }
                 }
@@ -295,7 +313,8 @@ fun DateSelector(
 @Composable
 fun ActivitiesList(
     activities: List<ActivityModel>,
-    onOptionsClicked: (String) -> Unit,
+    onDeleteClicked: (String) -> Unit,
+    onActivityClicked: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -306,14 +325,20 @@ fun ActivitiesList(
         items(activities, key = { it.id }) { activity ->
             ActivityCard(
                 activity = activity,
-                onOptionsClicked = { onOptionsClicked(activity.id) }
+                onDeleteClicked = { onDeleteClicked(activity.id) },
+                onActivityClicked = { onActivityClicked(activity.id) }
             )
         }
     }
 }
 
 @Composable
-fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
+fun ActivityCard(
+    activity: ActivityModel,
+    onDeleteClicked: () -> Unit,
+    onActivityClicked: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
     val indicatorColor = when (activity.type) {
         "CLASS" -> colorResource(id = R.color.indicator_class)
         "TASK" -> colorResource(id = R.color.indicator_task)
@@ -322,7 +347,9 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onActivityClicked() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
@@ -355,12 +382,26 @@ fun ActivityCard(activity: ActivityModel, onOptionsClicked: () -> Unit) {
                     )
                 }
             }
-            IconButton(onClick = onOptionsClicked) {
-                Icon(
-                    imageVector = Icons.Default.MoreVert,
-                    contentDescription = stringResource(id = R.string.activity_card_options),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(id = R.string.activity_card_options),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(id = R.string.activity_card_delete), color = colorResource(id = R.color.delete_red)) },
+                        onClick = {
+                            onDeleteClicked()
+                            showMenu = false
+                        }
+                    )
+                }
             }
         }
     }
