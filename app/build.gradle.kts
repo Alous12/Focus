@@ -49,6 +49,9 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-config-ktx:21.1.0")
 
+    // Accompanist Permissions
+    implementation ("com.google.accompanist:accompanist-permissions:0.34.0")
+
     // Compose / AndroidX
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))
     implementation(libs.androidx.core.ktx)

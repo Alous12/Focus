@@ -1,20 +1,20 @@
-package com.hlasoftware.focus.features.workgroups.presentation
+package com.hlasoftware.focus.features.workgroup_details.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hlasoftware.focus.features.workgroups.domain.model.Workgroup
-import com.hlasoftware.focus.features.workgroups.domain.usecase.DeleteWorkgroupUseCase
-import com.hlasoftware.focus.features.workgroups.domain.usecase.GetWorkgroupsUseCase
+import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupDetails
+import com.hlasoftware.focus.features.workgroup_details.domain.usecase.DeleteWorkgroupUseCase
+import com.hlasoftware.focus.features.workgroup_details.domain.usecase.GetWorkgroupDetailsUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
-sealed class WorkgroupsUiState {
-    object Loading : WorkgroupsUiState()
-    data class Success(val workgroups: List<Workgroup>) : WorkgroupsUiState()
-    data class Error(val message: String) : WorkgroupsUiState()
+sealed class WorkgroupDetailsUiState {
+    object Loading : WorkgroupDetailsUiState()
+    data class Success(val details: WorkgroupDetails) : WorkgroupDetailsUiState()
+    data class Error(val message: String) : WorkgroupDetailsUiState()
 }
 
 sealed class DeleteWorkgroupUiState {
@@ -24,24 +24,24 @@ sealed class DeleteWorkgroupUiState {
     data class Error(val message: String) : DeleteWorkgroupUiState()
 }
 
-class WorkgroupsViewModel(
-    private val getWorkgroupsUseCase: GetWorkgroupsUseCase,
+class WorkgroupDetailsViewModel(
+    private val getWorkgroupDetailsUseCase: GetWorkgroupDetailsUseCase,
     private val deleteWorkgroupUseCase: DeleteWorkgroupUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<WorkgroupsUiState>(WorkgroupsUiState.Loading)
-    val uiState: StateFlow<WorkgroupsUiState> = _uiState
+    private val _uiState = MutableStateFlow<WorkgroupDetailsUiState>(WorkgroupDetailsUiState.Loading)
+    val uiState: StateFlow<WorkgroupDetailsUiState> = _uiState
 
     private val _deleteState = MutableStateFlow<DeleteWorkgroupUiState>(DeleteWorkgroupUiState.Idle)
     val deleteState: StateFlow<DeleteWorkgroupUiState> = _deleteState
 
-    fun listenToWorkgroups(userId: String) {
+    fun loadWorkgroupDetails(workgroupId: String) {
         viewModelScope.launch {
-            getWorkgroupsUseCase(userId)
-                .onStart { _uiState.value = WorkgroupsUiState.Loading }
-                .catch { e -> _uiState.value = WorkgroupsUiState.Error(e.message ?: "Error escuchando los grupos de trabajo") }
-                .collect { workgroups ->
-                    _uiState.value = WorkgroupsUiState.Success(workgroups)
+            getWorkgroupDetailsUseCase(workgroupId)
+                .onStart { _uiState.value = WorkgroupDetailsUiState.Loading }
+                .catch { e -> _uiState.value = WorkgroupDetailsUiState.Error(e.message ?: "Error loading details") }
+                .collect { details ->
+                    _uiState.value = WorkgroupDetailsUiState.Success(details)
                 }
         }
     }
@@ -57,9 +57,5 @@ class WorkgroupsViewModel(
                     _deleteState.value = DeleteWorkgroupUiState.Error(it.message ?: "Error deleting workgroup")
                 }
         }
-    }
-    
-    fun resetDeleteState() {
-        _deleteState.value = DeleteWorkgroupUiState.Idle
     }
 }

@@ -36,8 +36,10 @@ import androidx.navigation.navArgument
 import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineScreen
 import com.hlasoftware.focus.features.activity_details.presentation.ActivityDetailsScreen
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
+import com.hlasoftware.focus.features.join_workgroup.presentation.JoinWorkgroupScreen
 import com.hlasoftware.focus.features.profile.application.ProfileScreen
 import com.hlasoftware.focus.features.routines.presentation.RoutinesScreen
+import com.hlasoftware.focus.features.workgroup_details.presentation.WorkgroupDetailsScreen
 import com.hlasoftware.focus.features.workgroups.presentation.WorkgroupsScreen
 import java.time.LocalDate
 
@@ -51,8 +53,11 @@ sealed class MainScreenTab(val route: String) {
 object ScreenRoutes {
     const val AddRoutine = "add_routine"
     const val ActivityDetails = "activity_details/{activityId}"
+    const val JoinWorkgroup = "join_workgroup"
+    const val WorkgroupDetails = "workgroup_details/{workgroupId}"
 
     fun activityDetailsRoute(activityId: String) = "activity_details/$activityId"
+    fun workgroupDetailsRoute(workgroupId: String) = "workgroup_details/$workgroupId"
 }
 
 enum class BottomNavItem(
@@ -76,6 +81,7 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
 
     var showAddActivitySheet by remember { mutableStateOf(false) }
     var showCreateWorkgroupSheet by remember { mutableStateOf(false) }
+    var showWorkgroupOptions by remember { mutableStateOf(false) }
 
     val topLevelDestinations = BottomNavItem.entries.map { it.screen.route }
 
@@ -160,7 +166,39 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                     userId = userId,
                     showCreateWorkgroupSheet = showCreateWorkgroupSheet,
                     onDismissCreateWorkgroupSheet = { showCreateWorkgroupSheet = false },
-                    onAddWorkgroup = { showCreateWorkgroupSheet = true }
+                    showWorkgroupOptions = showWorkgroupOptions,
+                    onDismissWorkgroupOptions = { showWorkgroupOptions = false },
+                    onAddWorkgroup = { showWorkgroupOptions = true },
+                    onCreateWorkgroup = { 
+                        showWorkgroupOptions = false
+                        showCreateWorkgroupSheet = true 
+                    },
+                    onJoinWorkgroup = { 
+                        showWorkgroupOptions = false
+                        navController.navigate(ScreenRoutes.JoinWorkgroup) 
+                    },
+                    onWorkgroupClick = { workgroupId ->
+                        navController.navigate(ScreenRoutes.workgroupDetailsRoute(workgroupId))
+                    }
+                )
+            }
+
+            composable(ScreenRoutes.JoinWorkgroup) {
+                JoinWorkgroupScreen(
+                    userId = userId,
+                    onJoinSuccess = { navController.popBackStack() },
+                    onCancel = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = ScreenRoutes.WorkgroupDetails,
+                arguments = listOf(navArgument("workgroupId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                val workgroupId = backStackEntry.arguments?.getString("workgroupId") ?: ""
+                WorkgroupDetailsScreen(
+                    workgroupId = workgroupId,
+                    onBack = { navController.popBackStack() }
                 )
             }
 

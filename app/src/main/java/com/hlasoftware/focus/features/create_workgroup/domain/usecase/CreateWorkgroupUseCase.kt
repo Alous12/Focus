@@ -15,6 +15,7 @@ class CreateWorkgroupUseCase(
         adminId: String
     ): Result<Unit> {
         return try {
+            // Primero, obtenemos el perfil del admin usando el UseCase correcto
             val adminProfileResult = getProfileUseCase(adminId)
 
             // Usamos .fold para manejar los dos casos posibles del Result: éxito o fracaso
