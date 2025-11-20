@@ -33,6 +33,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.hlasoftware.focus.features.add_member.domain.model.User
+import com.hlasoftware.focus.features.add_member.presentation.AddMemberScreen
 import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineScreen
 import com.hlasoftware.focus.features.activity_details.presentation.ActivityDetailsScreen
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
@@ -54,10 +56,12 @@ object ScreenRoutes {
     const val AddRoutine = "add_routine"
     const val ActivityDetails = "activity_details/{activityId}"
     const val JoinWorkgroup = "join_workgroup"
-    const val WorkgroupDetails = "workgroup_details/{workgroupId}"
+    const val WorkgroupDetails = "workgroup_details/{workgroupId}/{userId}" // Added userId
+    const val AddMember = "add_member/{workgroupId}"
 
     fun activityDetailsRoute(activityId: String) = "activity_details/$activityId"
-    fun workgroupDetailsRoute(workgroupId: String) = "workgroup_details/$workgroupId"
+    fun workgroupDetailsRoute(workgroupId: String, userId: String) = "workgroup_details/$workgroupId/$userId"
+    fun addMemberRoute(workgroupId: String) = "add_member/$workgroupId"
 }
 
 enum class BottomNavItem(
@@ -161,7 +165,7 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                 )
             }
 
-            composable(MainScreenTab.WorkGroups.route) {
+            composable(MainScreenTab.WorkGroups.route) { backStackEntry ->
                 WorkgroupsScreen(
                     userId = userId,
                     showCreateWorkgroupSheet = showCreateWorkgroupSheet,
@@ -178,8 +182,12 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                         navController.navigate(ScreenRoutes.JoinWorkgroup) 
                     },
                     onWorkgroupClick = { workgroupId ->
-                        navController.navigate(ScreenRoutes.workgroupDetailsRoute(workgroupId))
-                    }
+                        navController.navigate(ScreenRoutes.workgroupDetailsRoute(workgroupId, userId))
+                    },
+                    onNavigateToAddMember = { 
+                        navController.navigate(ScreenRoutes.addMemberRoute("new"))
+                    },
+                    navBackStackEntry = backStackEntry
                 )
             }
 
@@ -193,12 +201,31 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
 
             composable(
                 route = ScreenRoutes.WorkgroupDetails,
-                arguments = listOf(navArgument("workgroupId") { type = NavType.StringType })
+                arguments = listOf(
+                    navArgument("workgroupId") { type = NavType.StringType },
+                    navArgument("userId") { type = NavType.StringType } // Added userId
+                )
             ) { backStackEntry ->
                 val workgroupId = backStackEntry.arguments?.getString("workgroupId") ?: ""
+                val currentUserId = backStackEntry.arguments?.getString("userId") ?: ""
                 WorkgroupDetailsScreen(
                     workgroupId = workgroupId,
-                    onBack = { navController.popBackStack() }
+                    userId = currentUserId, // Pass the userId
+                    onBack = { navController.popBackStack() },
+                    onAddMember = { navController.navigate(ScreenRoutes.addMemberRoute(workgroupId)) }
+                )
+            }
+
+            composable(
+                route = ScreenRoutes.AddMember,
+                arguments = listOf(navArgument("workgroupId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                AddMemberScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddMembers = { members ->
+                        navController.previousBackStackEntry?.savedStateHandle?.set("selectedMembers", members)
+                        navController.popBackStack()
+                    }
                 )
             }
 

@@ -17,7 +17,8 @@ class CreateWorkgroupRepositoryImpl(
         description: String,
         imageUri: Uri?,
         adminId: String,
-        adminName: String
+        adminName: String,
+        memberIds: List<String>
     ): Result<Unit> {
         return try {
             var imageUrl: String? = null
@@ -33,7 +34,7 @@ class CreateWorkgroupRepositoryImpl(
                 "imageUrl" to imageUrl,
                 "admin" to adminId,
                 "adminName" to adminName, // Guardar el nombre del admin
-                "members" to listOf(adminId),
+                "members" to memberIds,
                 "code" to UUID.randomUUID().toString().substring(0, 6).uppercase()
             )
 

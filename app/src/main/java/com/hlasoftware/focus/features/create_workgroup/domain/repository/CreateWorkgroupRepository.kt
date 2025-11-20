@@ -8,6 +8,7 @@ interface CreateWorkgroupRepository {
         description: String,
         imageUri: Uri?,
         adminId: String,
-        adminName: String
+        adminName: String,
+        memberIds: List<String>
     ): Result<Unit>
 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -53,6 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.hlasoftware.focus.R
@@ -66,15 +68,17 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun WorkgroupDetailsScreen(
     workgroupId: String,
+    userId: String, // Added userId parameter
     onBack: () -> Unit,
+    onAddMember: () -> Unit,
     viewModel: WorkgroupDetailsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(workgroupId) {
-        viewModel.loadWorkgroupDetails(workgroupId)
+    LaunchedEffect(workgroupId, userId) { // Use userId in LaunchedEffect
+        viewModel.loadWorkgroupDetails(workgroupId, userId) // Pass userId to ViewModel
     }
 
     Scaffold(
@@ -103,7 +107,11 @@ fun WorkgroupDetailsScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is WorkgroupDetailsUiState.Success -> {
-                    WorkgroupDetailsContent(details = state.details, snackbarHostState = snackbarHostState)
+                    WorkgroupDetailsContent(
+                        details = state.details,
+                        snackbarHostState = snackbarHostState,
+                        onAddMember = onAddMember
+                    )
                 }
                 is WorkgroupDetailsUiState.Error -> {
                     Text(
@@ -120,7 +128,8 @@ fun WorkgroupDetailsScreen(
 @Composable
 fun WorkgroupDetailsContent(
     details: WorkgroupDetails,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    onAddMember: () -> Unit,
 ) {
     val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
@@ -203,9 +212,11 @@ fun WorkgroupDetailsContent(
             // Members
             Text(stringResource(id = R.string.workgroup_details_members_label), style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyColumn(
+                modifier = Modifier.height(200.dp) // Give a fixed height to the LazyColumn
+            ) {
                 items(details.members) { member ->
-                    MemberAvatar(member = member)
+                    MemberItem(member = member)
                 }
             }
             Spacer(modifier = Modifier.height(24.dp))
@@ -222,7 +233,7 @@ fun WorkgroupDetailsContent(
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
-                    onClick = { /* TODO */ },
+                    onClick = onAddMember,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(stringResource(id = R.string.workgroup_details_add_member_button))
@@ -240,14 +251,29 @@ fun WorkgroupDetailsContent(
 }
 
 @Composable
-fun MemberAvatar(member: WorkgroupMember) {
-    Box(
+fun MemberItem(member: WorkgroupMember) {
+    Row(
         modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(Color(android.graphics.Color.parseColor(member.color)))
-    )
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(Color(android.graphics.Color.parseColor(member.color)))
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = member.name,
+            style = MaterialTheme.typography.bodyLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
 }
+
 
 @Composable
 fun TaskCard(task: WorkgroupTask) {
@@ -262,7 +288,13 @@ fun TaskCard(task: WorkgroupTask) {
             Spacer(modifier = Modifier.height(4.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 items(task.implicatedMembers) { member ->
-                    MemberAvatar(member = member)
+                    // We can use a smaller version of the avatar here if we create one
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(Color(android.graphics.Color.parseColor(member.color)))
+                    )
                 }
             }
         }
