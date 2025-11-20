@@ -38,6 +38,26 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun findUserByEmail(email: String): Result<ProfileModel?> {
+        return try {
+            val querySnapshot = firestore.collection("users")
+                .whereEqualTo("email", email)
+                .limit(1)
+                .get()
+                .await()
+
+            if (querySnapshot.isEmpty) {
+                Result.success(null) // No user found
+            } else {
+                val document = querySnapshot.documents.first()
+                val profile = document.toObject(ProfileModel::class.java)
+                Result.success(profile)
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     override suspend fun updateSummary(userId: String, summary: String): Result<Unit> {
         if (userId.isBlank()) {
             return Result.failure(IllegalArgumentException("User ID cannot be blank."))

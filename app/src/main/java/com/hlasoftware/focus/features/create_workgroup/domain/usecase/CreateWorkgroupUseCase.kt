@@ -12,9 +12,11 @@ class CreateWorkgroupUseCase(
         name: String,
         description: String,
         imageUri: Uri?,
-        adminId: String
+        adminId: String,
+        memberIds: List<String>
     ): Result<Unit> {
         return try {
+            // Primero, obtenemos el perfil del admin usando el UseCase correcto
             val adminProfileResult = getProfileUseCase(adminId)
 
             // Usamos .fold para manejar los dos casos posibles del Result: éxito o fracaso
@@ -22,8 +24,9 @@ class CreateWorkgroupUseCase(
                 onSuccess = { adminProfile ->
                     // Si todo ha ido bien, tenemos el perfil y podemos acceder al nombre
                     val adminName = adminProfile.name.takeIf { it.isNotEmpty() } ?: "Unknown"
+                    val allMemberIds = (memberIds + adminId).distinct()
                     // Ahora sí, creamos el grupo con el nombre del admin
-                    createWorkgroupRepository.createWorkgroup(name, description, imageUri, adminId, adminName)
+                    createWorkgroupRepository.createWorkgroup(name, description, imageUri, adminId, adminName, allMemberIds)
                 },
                 onFailure = { exception ->
                     // Si no se puede obtener el perfil, propagamos el error

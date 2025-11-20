@@ -33,11 +33,15 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.hlasoftware.focus.features.add_member.domain.model.User
+import com.hlasoftware.focus.features.add_member.presentation.AddMemberScreen
 import com.hlasoftware.focus.features.add_routines.presentation.AddRoutineScreen
 import com.hlasoftware.focus.features.activity_details.presentation.ActivityDetailsScreen
 import com.hlasoftware.focus.features.home.presentation.HomeScreen
+import com.hlasoftware.focus.features.join_workgroup.presentation.JoinWorkgroupScreen
 import com.hlasoftware.focus.features.profile.application.ProfileScreen
 import com.hlasoftware.focus.features.routines.presentation.RoutinesScreen
+import com.hlasoftware.focus.features.workgroup_details.presentation.WorkgroupDetailsScreen
 import com.hlasoftware.focus.features.workgroups.presentation.WorkgroupsScreen
 import java.time.LocalDate
 
@@ -51,8 +55,13 @@ sealed class MainScreenTab(val route: String) {
 object ScreenRoutes {
     const val AddRoutine = "add_routine"
     const val ActivityDetails = "activity_details/{activityId}"
+    const val JoinWorkgroup = "join_workgroup"
+    const val WorkgroupDetails = "workgroup_details/{workgroupId}/{userId}" // Added userId
+    const val AddMember = "add_member/{workgroupId}"
 
     fun activityDetailsRoute(activityId: String) = "activity_details/$activityId"
+    fun workgroupDetailsRoute(workgroupId: String, userId: String) = "workgroup_details/$workgroupId/$userId"
+    fun addMemberRoute(workgroupId: String) = "add_member/$workgroupId"
 }
 
 enum class BottomNavItem(
@@ -76,6 +85,7 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
 
     var showAddActivitySheet by remember { mutableStateOf(false) }
     var showCreateWorkgroupSheet by remember { mutableStateOf(false) }
+    var showWorkgroupOptions by remember { mutableStateOf(false) }
 
     val topLevelDestinations = BottomNavItem.entries.map { it.screen.route }
 
@@ -155,12 +165,67 @@ fun MainScreen(userId: String, onLogout: () -> Unit) {
                 )
             }
 
-            composable(MainScreenTab.WorkGroups.route) {
+            composable(MainScreenTab.WorkGroups.route) { backStackEntry ->
                 WorkgroupsScreen(
                     userId = userId,
                     showCreateWorkgroupSheet = showCreateWorkgroupSheet,
                     onDismissCreateWorkgroupSheet = { showCreateWorkgroupSheet = false },
-                    onAddWorkgroup = { showCreateWorkgroupSheet = true }
+                    showWorkgroupOptions = showWorkgroupOptions,
+                    onDismissWorkgroupOptions = { showWorkgroupOptions = false },
+                    onAddWorkgroup = { showWorkgroupOptions = true },
+                    onCreateWorkgroup = { 
+                        showWorkgroupOptions = false
+                        showCreateWorkgroupSheet = true 
+                    },
+                    onJoinWorkgroup = { 
+                        showWorkgroupOptions = false
+                        navController.navigate(ScreenRoutes.JoinWorkgroup) 
+                    },
+                    onWorkgroupClick = { workgroupId ->
+                        navController.navigate(ScreenRoutes.workgroupDetailsRoute(workgroupId, userId))
+                    },
+                    onNavigateToAddMember = { 
+                        navController.navigate(ScreenRoutes.addMemberRoute("new"))
+                    },
+                    navBackStackEntry = backStackEntry
+                )
+            }
+
+            composable(ScreenRoutes.JoinWorkgroup) {
+                JoinWorkgroupScreen(
+                    userId = userId,
+                    onJoinSuccess = { navController.popBackStack() },
+                    onCancel = { navController.popBackStack() }
+                )
+            }
+
+            composable(
+                route = ScreenRoutes.WorkgroupDetails,
+                arguments = listOf(
+                    navArgument("workgroupId") { type = NavType.StringType },
+                    navArgument("userId") { type = NavType.StringType } // Added userId
+                )
+            ) { backStackEntry ->
+                val workgroupId = backStackEntry.arguments?.getString("workgroupId") ?: ""
+                val currentUserId = backStackEntry.arguments?.getString("userId") ?: ""
+                WorkgroupDetailsScreen(
+                    workgroupId = workgroupId,
+                    userId = currentUserId, // Pass the userId
+                    onBack = { navController.popBackStack() },
+                    onAddMember = { navController.navigate(ScreenRoutes.addMemberRoute(workgroupId)) }
+                )
+            }
+
+            composable(
+                route = ScreenRoutes.AddMember,
+                arguments = listOf(navArgument("workgroupId") { type = NavType.StringType })
+            ) { backStackEntry ->
+                AddMemberScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddMembers = { members ->
+                        navController.previousBackStackEntry?.savedStateHandle?.set("selectedMembers", members)
+                        navController.popBackStack()
+                    }
                 )
             }
 

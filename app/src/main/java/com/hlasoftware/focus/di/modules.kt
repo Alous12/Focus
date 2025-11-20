@@ -37,27 +37,27 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
+    // Firebase
+    single { FirebaseAuth.getInstance() }
+    single { FirebaseFirestore.getInstance() }
+    single { FirebaseStorage.getInstance() }
+    
+    // Auth
     single { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
     viewModel { LoginViewModel(get()) }
+    single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
+    factory { SignUpUseCase(get()) }
+    viewModel { SignUpViewModel(get()) }
 
-    single<IProfileRepository> { ProfileRepository(
-        firestore = get(),
-        auth = get(),
-        storage = get()
-    )}
+    // Profile
+    single<IProfileRepository> { ProfileRepository(firestore = get(), auth = get(), storage = get())}
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { DeleteAccountUseCase(get()) }
     viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } 
 
-    single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
-    single { FirebaseAuth.getInstance() }
-    single { FirebaseFirestore.getInstance() }
-    single { FirebaseStorage.getInstance() }
-    factory { SignUpUseCase(get()) }
-    viewModel { SignUpViewModel(get()) }
-
+    // Home
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
     viewModel { HomeViewModel(get()) }
@@ -72,6 +72,7 @@ val appModule = module {
     factory { AddRoutineUseCase(get()) }
     viewModel { AddRoutineViewModel(get()) }
 
+    // Posts
     single<IPostRepository> { PostRepositoryImpl(get(), get()) }
     factory { GetPostsUseCase(get()) }
     factory { CreatePostUseCase(get()) }

@@ -24,11 +24,12 @@ class CreateWorkgroupViewModel(private val createWorkgroupUseCase: CreateWorkgro
         name: String,
         description: String,
         imageUri: Uri?,
-        adminId: String
+        adminId: String,
+        memberIds: List<String>
     ) {
         viewModelScope.launch {
             _uiState.value = CreateWorkgroupUiState.Loading
-            createWorkgroupUseCase(name, description, imageUri, adminId)
+            createWorkgroupUseCase(name, description, imageUri, adminId, memberIds)
                 .onSuccess {
                     _uiState.value = CreateWorkgroupUiState.Success
                 }

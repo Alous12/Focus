@@ -36,6 +36,13 @@
     <string name="workgroups_add_button">Añadir grupo de trabajo</string>
     <string name="workgroups_no_groups">No perteneces a ningún grupo de trabajo.</string>
     <string name="workgroup_card_admin_label">Admin. %1$s</string>
+    <string name="workgroup_options_menu_title">Opciones de Work Group</string>
+    <string name="workgroup_options_create">Crear un grupo</string>
+    <string name="workgroup_options_join">Unirse a un grupo</string>
+    <string name="workgroup_delete_option">Eliminar grupo</string>
+    <string name="workgroup_delete_dialog_title">¿Estás seguro de que quieres eliminar este grupo?</string>
+    <string name="workgroup_delete_dialog_confirm">Eliminar</string>
+    <string name="workgroup_delete_dialog_cancel">Cancelar</string>
 
     <!-- CreateWorkgroupSheet -->
     <string name="create_workgroup_title">Crear Grupo</string>
@@ -45,6 +52,47 @@
     <string name="create_workgroup_description_label">Descripcion del Work Group</string>
     <string name="create_workgroup_add_members_button">Agregar Miembro/s</string>
     <string name="create_workgroup_add_members_later_prompt">Si no agregas algún miembro ahora, podrás hacerlo después sin ningún problema.</string>
+
+    <!-- JoinWorkgroupScreen -->
+    <string name="join_workgroup_title">Unirse a un Work Group</string>
+    <string name="join_workgroup_code_placeholder">Ingresa el código del grupo</string>
+    <string name="join_workgroup_cancel_button">Cancelar</string>
+    <string name="join_workgroup_join_button">Unirse</string>
+
+    <!-- WorkgroupDetailsScreen -->
+    <string name="workgroup_details_title">Detalles del Grupo</string>
+    <string name="workgroup_details_back_button">Volver</string>
+    <string name="workgroup_details_options_button">Opciones del grupo</string>
+    <string name="workgroup_details_delete_option">Eliminar grupo</string>
+    <string name="workgroup_details_leave_option">Abandonar grupo</string>
+    <string name="workgroup_details_delete_dialog_title">¿Estás seguro de que quieres eliminar este grupo?</string>
+    <string name="workgroup_details_delete_dialog_confirm">Eliminar</string>
+    <string name="workgroup_details_delete_dialog_cancel">Cancelar</string>
+    <string name="workgroup_details_leave_dialog_title">¿Estás seguro de que quieres abandonar este grupo?</string>
+    <string name="workgroup_details_leave_dialog_confirm">Abandonar</string>
+    <string name="workgroup_details_admin_label">Administrador</string>
+    <string name="workgroup_details_members_label">Miembros</string>
+    <string name="workgroup_details_dashboard_label">Dashboard</string>
+    <string name="workgroup_details_code_label">Código del Grupo</string>
+    <string name="workgroup_details_copy_code_success">Código copiado al portapapeles</string>
+    <string name="workgroup_details_task_implicated_label">Implicados:</string>
+    <string name="workgroup_details_add_member_button">Agregar Miembro/s</string>
+    <string name="workgroup_details_add_task_button">Agregar Tarea</string>
+
+    <!-- AddMemberScreen -->
+    <string name="add_member_title">Agregar Miembro</string>
+    <string name="add_member_back_button">Volver</string>
+    <string name="add_member_search_placeholder">Busca un correo</string>
+    <string name="add_member_cancel_button">Cancelar</string>
+    <string name="add_member_add_button">Agregar</string>
+
+    <!-- AddMemberDialog -->
+    <string name="add_member_dialog_title">Agregar Miembro</string>
+    <string name="add_member_dialog_search_placeholder">Busca un correo</string>
+    <string name="add_member_dialog_no_results">No se encontraron usuarios</string>
+    <string name="add_member_dialog_add_button">Agregar</string>
+    <string name="add_member_dialog_cancel_button">Cancelar</string>
+    <string name="add_member_success_message">Miembro(s) agregado(s) con éxito</string>
 
     <!-- LoginScreen -->
     <string name="login_title">Inicia Sesión</string>

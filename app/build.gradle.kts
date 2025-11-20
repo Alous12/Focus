@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-parcelize")
 }
 
 android {
@@ -44,10 +45,13 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.5.0")) // Use the latest BoM version
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-firestore")
     implementation(libs.datastore)
     implementation("com.google.firebase:firebase-analytics")
-    implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-config-ktx:21.1.0")
+
+    // Accompanist Permissions
+    implementation ("com.google.accompanist:accompanist-permissions:0.34.0")
 
     // Compose / AndroidX
     implementation(platform("androidx.compose:compose-bom:2024.06.00"))

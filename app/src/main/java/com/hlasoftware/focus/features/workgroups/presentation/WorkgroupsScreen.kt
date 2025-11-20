@@ -1,5 +1,6 @@
 package com.hlasoftware.focus.features.workgroups.presentation
 
+import android.Manifest
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -23,18 +24,21 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -50,6 +54,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,8 +64,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import coil.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import com.hlasoftware.focus.R
+import com.hlasoftware.focus.features.add_member.domain.model.User
 import com.hlasoftware.focus.features.create_workgroup.presentation.CreateWorkgroupUiState
 import com.hlasoftware.focus.features.create_workgroup.presentation.CreateWorkgroupViewModel
 import com.hlasoftware.focus.features.workgroups.domain.model.Workgroup
@@ -73,17 +83,75 @@ fun WorkgroupsScreen(
     userId: String,
     showCreateWorkgroupSheet: Boolean,
     onDismissCreateWorkgroupSheet: () -> Unit,
+    showWorkgroupOptions: Boolean,
+    onDismissWorkgroupOptions: () -> Unit,
     onAddWorkgroup: () -> Unit,
+    onCreateWorkgroup: () -> Unit,
+    onJoinWorkgroup: () -> Unit,
+    onWorkgroupClick: (String) -> Unit,
+    onNavigateToAddMember: () -> Unit,
+    navBackStackEntry: NavBackStackEntry,
     viewModel: WorkgroupsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val deleteState by viewModel.deleteState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var workgroupToDelete by remember { mutableStateOf<Workgroup?>(null) }
 
-    LaunchedEffect(userId, showCreateWorkgroupSheet) {
-        if (!showCreateWorkgroupSheet) {
-            viewModel.loadWorkgroups(userId)
+    var newGroupName by rememberSaveable { mutableStateOf("") }
+    var newGroupDescription by rememberSaveable { mutableStateOf("") }
+    var newGroupImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var selectedMembersForNewGroup by rememberSaveable { mutableStateOf<List<User>>(emptyList()) }
+
+    val newMembersResult = navBackStackEntry.savedStateHandle.get<List<User>>("selectedMembers")
+
+    LaunchedEffect(newMembersResult) {
+        if (newMembersResult != null) {
+            selectedMembersForNewGroup = newMembersResult
+            navBackStackEntry.savedStateHandle.remove<List<User>>("selectedMembers")
         }
+    }
+
+
+    LaunchedEffect(userId) {
+        viewModel.listenToWorkgroups(userId)
+    }
+
+    LaunchedEffect(deleteState) {
+        when (val state = deleteState) {
+            is DeleteWorkgroupUiState.Success -> {
+                scope.launch { snackbarHostState.showSnackbar("Grupo eliminado con éxito") }
+                viewModel.resetDeleteState()
+            }
+            is DeleteWorkgroupUiState.Error -> {
+                scope.launch { snackbarHostState.showSnackbar(state.message) }
+                viewModel.resetDeleteState()
+            }
+            else -> {}
+        }
+    }
+
+    if (workgroupToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { workgroupToDelete = null },
+            title = { Text(stringResource(id = R.string.workgroup_delete_dialog_title)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        workgroupToDelete?.let { viewModel.deleteWorkgroup(it.id) }
+                        workgroupToDelete = null
+                    }
+                ) {
+                    Text(stringResource(id = R.string.workgroup_delete_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { workgroupToDelete = null }) {
+                    Text(stringResource(id = R.string.workgroup_delete_dialog_cancel))
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -96,12 +164,12 @@ fun WorkgroupsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onAddWorkgroup,
-                containerColor = colorScheme.primary
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = stringResource(id = R.string.workgroups_add_button),
-                    tint = colorScheme.onPrimary
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
@@ -129,7 +197,11 @@ fun WorkgroupsScreen(
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             items(state.workgroups) { workgroup ->
-                                WorkgroupCard(workgroup = workgroup)
+                                WorkgroupCard(
+                                    workgroup = workgroup,
+                                    onClick = { onWorkgroupClick(workgroup.id) },
+                                    onDeleteClick = { workgroupToDelete = workgroup }
+                                )
                             }
                         }
                     }
@@ -141,7 +213,7 @@ fun WorkgroupsScreen(
                     ) {
                         Text(
                             text = state.message,
-                            color = colorScheme.error
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -149,8 +221,37 @@ fun WorkgroupsScreen(
         }
     }
 
+    if (showWorkgroupOptions) {
+        ModalBottomSheet(
+            onDismissRequest = onDismissWorkgroupOptions,
+            sheetState = rememberModalBottomSheetState(),
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(id = R.string.workgroup_options_menu_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+                Button(
+                    onClick = onCreateWorkgroup,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.workgroup_options_create))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onJoinWorkgroup,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(id = R.string.workgroup_options_join))
+                }
+            }
+        }
+    }
+
     if (showCreateWorkgroupSheet) {
         val createWorkgroupViewModel: CreateWorkgroupViewModel = koinViewModel()
+
         ModalBottomSheet(
             onDismissRequest = {
                 createWorkgroupViewModel.resetState()
@@ -161,11 +262,11 @@ fun WorkgroupsScreen(
             CreateWorkgroupContent(
                 userId = userId,
                 viewModel = createWorkgroupViewModel,
-                onWorkgroupCreated = {
-                    viewModel.loadWorkgroups(userId)
-                },
-                onError = {
-                    message ->
+                name = newGroupName, onNameChange = { newGroupName = it },
+                description = newGroupDescription, onDescriptionChange = { newGroupDescription = it },
+                imageUri = newGroupImageUri, onImageUriChange = { newGroupImageUri = it },
+                selectedMembers = selectedMembersForNewGroup,
+                onError = { message ->
                     scope.launch {
                         snackbarHostState.showSnackbar(message)
                     }
@@ -173,39 +274,47 @@ fun WorkgroupsScreen(
                 onClose = {
                     createWorkgroupViewModel.resetState()
                     onDismissCreateWorkgroupSheet()
-                }
+                    // Clear state on close
+                    newGroupName = ""
+                    newGroupDescription = ""
+                    newGroupImageUri = null
+                    selectedMembersForNewGroup = emptyList()
+                },
+                onNavigateToAddMember = onNavigateToAddMember
             )
         }
     }
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun CreateWorkgroupContent(
     userId: String,
     viewModel: CreateWorkgroupViewModel,
-    onWorkgroupCreated: () -> Unit,
+    name: String, onNameChange: (String) -> Unit,
+    description: String, onDescriptionChange: (String) -> Unit,
+    imageUri: Uri?, onImageUriChange: (Uri?) -> Unit,
+    selectedMembers: List<User>,
     onError: (String) -> Unit,
     onClose: () -> Unit,
+    onNavigateToAddMember: () -> Unit,
 ) {
-    var name by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var imageUri by remember { mutableStateOf<Uri?>(null) }
     val uiState by viewModel.uiState.collectAsState()
+    val permissionState = rememberPermissionState(Manifest.permission.READ_EXTERNAL_STORAGE)
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> imageUri = uri }
+        onResult = { uri -> onImageUriChange(uri) }
     )
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
             is CreateWorkgroupUiState.Success -> {
-                onWorkgroupCreated()
-                onClose() // Close sheet on success
+                onClose()
             }
             is CreateWorkgroupUiState.Error -> {
                 onError(state.message)
-                viewModel.resetState() // Reset after showing error
+                viewModel.resetState()
             }
             else -> {}
         }
@@ -226,7 +335,10 @@ fun CreateWorkgroupContent(
                 Icon(Icons.Default.Close, contentDescription = stringResource(id = R.string.create_workgroup_close))
             }
             TextButton(
-                onClick = { viewModel.createWorkgroup(name, description, imageUri, userId) },
+                onClick = { 
+                    val memberIds = selectedMembers.map { it.id }
+                    viewModel.createWorkgroup(name, description, imageUri, userId, memberIds) 
+                },
                 enabled = name.isNotBlank() && description.isNotBlank() && uiState !is CreateWorkgroupUiState.Loading
             ) {
                 if (uiState is CreateWorkgroupUiState.Loading) {
@@ -242,7 +354,13 @@ fun CreateWorkgroupContent(
         Text(text = stringResource(id = R.string.create_workgroup_image_prompt))
         Spacer(modifier = Modifier.height(8.dp))
 
-        Box(modifier = Modifier.clickable { imagePickerLauncher.launch("image/*") }) {
+        Box(modifier = Modifier.clickable { 
+            if (permissionState.status.isGranted) {
+                imagePickerLauncher.launch("image/*")
+            } else {
+                permissionState.launchPermissionRequest()
+            }
+        }) {
             if (imageUri != null) {
                 AsyncImage(
                     model = imageUri,
@@ -267,26 +385,37 @@ fun CreateWorkgroupContent(
 
         TextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = onNameChange,
             label = { Text(stringResource(id = R.string.create_workgroup_name_label)) },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
         TextField(
             value = description,
-            onValueChange = { description = it },
+            onValueChange = onDescriptionChange,
             label = { Text(stringResource(id = R.string.create_workgroup_description_label)) },
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = { /* TODO: Handle add members */ }) {
+        if (selectedMembers.isNotEmpty()) {
+            Text("Miembros seleccionados:", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn {
+                items(selectedMembers) { member ->
+                    Text(member.name)
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        Button(onClick = onNavigateToAddMember) {
             Text(stringResource(id = R.string.create_workgroup_add_members_button))
         }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = stringResource(id = R.string.create_workgroup_add_members_later_prompt),
-            style = typography.bodySmall,
+            style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center,
             modifier = Modifier.fillMaxWidth()
         )
@@ -294,11 +423,19 @@ fun CreateWorkgroupContent(
 }
 
 @Composable
-fun WorkgroupCard(workgroup: Workgroup) {
+fun WorkgroupCard(
+    workgroup: Workgroup,
+    onClick: () -> Unit,
+    onDeleteClick: () -> Unit
+) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surfaceVariant)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -314,15 +451,35 @@ fun WorkgroupCard(workgroup: Workgroup) {
                 placeholder = painterResource(id = R.drawable.ic_launcher_foreground) // Replace with your placeholder
             )
             Spacer(modifier = Modifier.width(16.dp))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = workgroup.name,
-                    style = typography.titleMedium
+                    style = MaterialTheme.typography.titleMedium
                 )
                 Text(
                     text = stringResource(id = R.string.workgroup_card_admin_label, workgroup.adminName),
-                    style = typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall
                 )
+            }
+            Box {
+                IconButton(onClick = { showMenu = true }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = stringResource(id = R.string.workgroup_details_options_button)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(id = R.string.workgroup_delete_option)) },
+                        onClick = {
+                            onDeleteClick()
+                            showMenu = false
+                        }
+                    )
+                }
             }
         }
     }
