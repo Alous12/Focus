@@ -1,5 +1,6 @@
 package com.hlasoftware.focus.features.workgroups.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.hlasoftware.focus.features.workgroups.domain.model.Workgroup
 import com.hlasoftware.focus.features.workgroups.domain.repository.WorkgroupRepository
@@ -31,6 +32,16 @@ class WorkgroupRepositoryImpl(private val firestore: FirebaseFirestore) : Workgr
     override suspend fun deleteWorkgroup(workgroupId: String): Result<Unit> {
         return try {
             firestore.collection("workgroups").document(workgroupId).delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    override suspend fun leaveWorkgroup(workgroupId: String, userId: String): Result<Unit> {
+        return try {
+            val workgroupRef = firestore.collection("workgroups").document(workgroupId)
+            workgroupRef.update("members", FieldValue.arrayRemove(userId)).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

@@ -95,9 +95,11 @@ fun WorkgroupsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val deleteState by viewModel.deleteState.collectAsState()
+    val leaveState by viewModel.leaveState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     var workgroupToDelete by remember { mutableStateOf<Workgroup?>(null) }
+    var workgroupToLeave by remember { mutableStateOf<Workgroup?>(null) }
 
     var newGroupName by rememberSaveable { mutableStateOf("") }
     var newGroupDescription by rememberSaveable { mutableStateOf("") }
@@ -132,6 +134,20 @@ fun WorkgroupsScreen(
         }
     }
 
+    LaunchedEffect(leaveState) {
+        when (val state = leaveState) {
+            is LeaveWorkgroupUiState.Success -> {
+                scope.launch { snackbarHostState.showSnackbar("Has abandonado el grupo") }
+                viewModel.resetLeaveState()
+            }
+            is LeaveWorkgroupUiState.Error -> {
+                scope.launch { snackbarHostState.showSnackbar(state.message) }
+                viewModel.resetLeaveState()
+            }
+            else -> {}
+        }
+    }
+
     if (workgroupToDelete != null) {
         AlertDialog(
             onDismissRequest = { workgroupToDelete = null },
@@ -149,6 +165,28 @@ fun WorkgroupsScreen(
             dismissButton = {
                 TextButton(onClick = { workgroupToDelete = null }) {
                     Text(stringResource(id = R.string.workgroup_delete_dialog_cancel))
+                }
+            }
+        )
+    }
+
+    if (workgroupToLeave != null) {
+        AlertDialog(
+            onDismissRequest = { workgroupToLeave = null },
+            title = { Text(stringResource(id = R.string.workgroup_details_leave_dialog_title)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        workgroupToLeave?.let { viewModel.leaveWorkgroup(it.id, userId) }
+                        workgroupToLeave = null
+                    }
+                ) {
+                    Text(stringResource(id = R.string.workgroup_details_leave_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { workgroupToLeave = null }) {
+                    Text(stringResource(id = R.string.workgroup_details_delete_dialog_cancel))
                 }
             }
         )
@@ -199,8 +237,10 @@ fun WorkgroupsScreen(
                             items(state.workgroups) { workgroup ->
                                 WorkgroupCard(
                                     workgroup = workgroup,
+                                    userId = userId,
                                     onClick = { onWorkgroupClick(workgroup.id) },
-                                    onDeleteClick = { workgroupToDelete = workgroup }
+                                    onDeleteClick = { workgroupToDelete = workgroup },
+                                    onLeaveClick = { workgroupToLeave = workgroup }
                                 )
                             }
                         }
@@ -425,8 +465,10 @@ fun CreateWorkgroupContent(
 @Composable
 fun WorkgroupCard(
     workgroup: Workgroup,
+    userId: String,
     onClick: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onLeaveClick: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
 
@@ -472,13 +514,23 @@ fun WorkgroupCard(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.workgroup_delete_option)) },
-                        onClick = {
-                            onDeleteClick()
-                            showMenu = false
-                        }
-                    )
+                    if (workgroup.admin == userId) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.workgroup_delete_option)) },
+                            onClick = {
+                                onDeleteClick()
+                                showMenu = false
+                            }
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(id = R.string.workgroup_details_leave_option)) },
+                            onClick = {
+                                onLeaveClick()
+                                showMenu = false
+                            }
+                        )
+                    }
                 }
             }
         }

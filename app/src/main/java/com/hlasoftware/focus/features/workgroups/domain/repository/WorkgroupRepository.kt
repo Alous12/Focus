@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface WorkgroupRepository {
     fun getWorkgroups(userId: String): Flow<List<Workgroup>>
     suspend fun deleteWorkgroup(workgroupId: String): Result<Unit>
+    suspend fun leaveWorkgroup(workgroupId: String, userId: String): Result<Unit>
 }

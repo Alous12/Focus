@@ -79,22 +79,4 @@ class WorkgroupDetailsRepositoryImpl(private val firestore: FirebaseFirestore) :
             WorkgroupDetails(workgroup, members, tasks)
         }
     }
-
-    override suspend fun deleteWorkgroup(workgroupId: String): Result<Unit> {
-        return try {
-            firestore.collection("workgroups").document(workgroupId).delete().await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
-
-    override suspend fun leaveWorkgroup(workgroupId: String, userId: String): Result<Unit> {
-        return try {
-            firestore.collection("workgroups").document(workgroupId).update("members", FieldValue.arrayRemove(userId)).await()
-            Result.success(Unit)
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
 }
