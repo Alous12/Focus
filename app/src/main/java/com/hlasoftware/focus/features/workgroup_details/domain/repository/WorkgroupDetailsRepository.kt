@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface WorkgroupDetailsRepository {
     fun getWorkgroupDetails(workgroupId: String): Flow<WorkgroupDetails>
+    suspend fun deleteTask(taskId: String): Result<Unit>
 }

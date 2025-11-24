@@ -24,10 +24,14 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +41,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -77,8 +82,11 @@ fun WorkgroupDetailsScreen(
     viewModel: WorkgroupDetailsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val deleteTaskState by viewModel.deleteTaskState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     var showAddTaskSheet by remember { mutableStateOf(false) }
+    var taskToDelete by remember { mutableStateOf<WorkgroupTask?>(null) }
 
     val currentState = uiState
     if (showAddTaskSheet && currentState is WorkgroupDetailsUiState.Success) {
@@ -89,6 +97,40 @@ fun WorkgroupDetailsScreen(
             memberIds = memberIds,
             onDismiss = { showAddTaskSheet = false },
         )
+    }
+
+    if (taskToDelete != null) {
+        AlertDialog(
+            onDismissRequest = { taskToDelete = null },
+            title = { Text(stringResource(R.string.delete_activity_dialog_title)) },
+            confirmButton = {
+                TextButton(onClick = {
+                    taskToDelete?.let { viewModel.deleteTask(it.id) }
+                    taskToDelete = null
+                }) {
+                    Text(stringResource(R.string.delete_activity_dialog_yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { taskToDelete = null }) {
+                    Text(stringResource(R.string.delete_activity_dialog_no))
+                }
+            }
+        )
+    }
+
+    LaunchedEffect(deleteTaskState) {
+        when (val state = deleteTaskState) {
+            is DeleteTaskUiState.Success -> {
+                scope.launch { snackbarHostState.showSnackbar("Task deleted successfully") }
+                viewModel.resetDeleteTaskState()
+            }
+            is DeleteTaskUiState.Error -> {
+                scope.launch { snackbarHostState.showSnackbar(state.message) }
+                viewModel.resetDeleteTaskState()
+            }
+            else -> {}
+        }
     }
 
     LaunchedEffect(workgroupId, userId) { // Use userId in LaunchedEffect
@@ -123,9 +165,11 @@ fun WorkgroupDetailsScreen(
                 is WorkgroupDetailsUiState.Success -> {
                     WorkgroupDetailsContent(
                         details = state.details,
+                        isUserAdmin = state.isUserAdmin,
                         snackbarHostState = snackbarHostState,
                         onAddMember = onAddMember,
-                        onAddTask = { showAddTaskSheet = true }
+                        onAddTask = { showAddTaskSheet = true },
+                        onDeleteTask = { taskToDelete = it }
                     )
                 }
                 is WorkgroupDetailsUiState.Error -> {
@@ -143,9 +187,11 @@ fun WorkgroupDetailsScreen(
 @Composable
 fun WorkgroupDetailsContent(
     details: WorkgroupDetails,
+    isUserAdmin: Boolean,
     snackbarHostState: SnackbarHostState,
     onAddMember: () -> Unit,
     onAddTask: () -> Unit,
+    onDeleteTask: (WorkgroupTask) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
@@ -241,7 +287,7 @@ fun WorkgroupDetailsContent(
             Text(stringResource(id = R.string.workgroup_details_dashboard_label), style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
             details.tasks.forEach { task ->
-                TaskCard(task = task)
+                TaskCard(task = task, isUserAdmin = isUserAdmin, onDeleteClick = { onDeleteTask(task) })
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
@@ -292,25 +338,42 @@ fun MemberItem(member: WorkgroupMember) {
 
 
 @Composable
-fun TaskCard(task: WorkgroupTask) {
+fun TaskCard(task: WorkgroupTask, isUserAdmin: Boolean, onDeleteClick: () -> Unit) {
+    var showMenu by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(task.name, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(stringResource(id = R.string.workgroup_details_task_implicated_label))
-            Spacer(modifier = Modifier.height(4.dp))
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(task.implicatedMembers) { member ->
-                    // We can use a smaller version of the avatar here if we create one
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(Color(android.graphics.Color.parseColor(member.color)))
-                    )
+        Row(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(task.name, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(stringResource(id = R.string.workgroup_details_task_implicated_label))
+                Spacer(modifier = Modifier.height(4.dp))
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(task.implicatedMembers) { member ->
+                        // We can use a smaller version of the avatar here if we create one
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(android.graphics.Color.parseColor(member.color)))
+                        )
+                    }
+                }
+            }
+            if (isUserAdmin) {
+                Box {
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Task Options")
+                    }
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(text = { Text("Delete") }, onClick = {
+                            onDeleteClick()
+                            showMenu = false
+                        })
+                    }
                 }
             }
         }

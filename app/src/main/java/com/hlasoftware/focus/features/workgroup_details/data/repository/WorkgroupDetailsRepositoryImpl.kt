@@ -112,4 +112,13 @@ class WorkgroupDetailsRepositoryImpl(private val firestore: FirebaseFirestore) :
             WorkgroupDetails(workgroup, members, tasks)
         }
     }
+
+    override suspend fun deleteTask(taskId: String): Result<Unit> {
+        return try {
+            firestore.collection("tasks").document(taskId).delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
