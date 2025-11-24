@@ -3,6 +3,7 @@ package com.hlasoftware.focus.features.workgroup_details.data.repository
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FieldPath
 import com.google.firebase.firestore.FirebaseFirestore
+import com.hlasoftware.focus.features.add_task.domain.model.Task
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupDetails
 import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupMember
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
 class WorkgroupDetailsRepositoryImpl(private val firestore: FirebaseFirestore) : WorkgroupDetailsRepository {
@@ -73,7 +75,38 @@ class WorkgroupDetailsRepositoryImpl(private val firestore: FirebaseFirestore) :
             }
         }
 
-        val tasksFlow = flowOf(emptyList<WorkgroupTask>())
+        val tasksFlow = callbackFlow<List<Task>> {
+            val listener = firestore.collection("tasks")
+                .whereEqualTo("workgroupId", workgroupId)
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null) {
+                        close(e)
+                        return@addSnapshotListener
+                    }
+                    if (snapshot != null) {
+                        val tasks = snapshot.documents.mapNotNull { document ->
+                            document.toObject(Task::class.java)?.copy(id = document.id)
+                        }
+                        trySend(tasks)
+                    }
+                }
+            awaitClose { listener.remove() }
+        }.flatMapLatest { tasks ->
+            val memberIds = tasks.flatMap { it.assignedMemberIds }.distinct()
+            if (memberIds.isEmpty()) {
+                flowOf(tasks.map { WorkgroupTask(it.id, it.name, emptyList()) })
+            } else {
+                flowOf(firestore.collection("users").whereIn(FieldPath.documentId(), memberIds).get().await()).map { userSnapshot ->
+                    val users = userSnapshot.documents.mapNotNull { it.toObject(ProfileModel::class.java)?.copy(uid = it.id) }
+                    tasks.map { task ->
+                        val implicatedMembers = users.filter { user -> task.assignedMemberIds.contains(user.uid) }.map {
+                            WorkgroupMember(it.uid, it.name, "#%06X".format(0xFFFFFF and it.name.hashCode()))
+                        }
+                        WorkgroupTask(task.id, task.name, implicatedMembers)
+                    }
+                }
+            }
+        }
 
         return combine(workgroupFlow, membersFlow, tasksFlow) { workgroup, members, tasks ->
             WorkgroupDetails(workgroup, members, tasks)

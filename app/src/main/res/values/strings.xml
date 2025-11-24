@@ -79,6 +79,14 @@
     <string name="workgroup_details_add_member_button">Agregar Miembro/s</string>
     <string name="workgroup_details_add_task_button">Agregar Tarea</string>
 
+    <!-- Add Task -->
+    <string name="add_task_create_for_me">Crear para mí</string>
+    <string name="add_task_create_for_all">Crear para todos</string>
+    <string name="add_task_name_label">Nombre de la Actividad</string>
+    <string name="add_task_description_label">Descripción de la Actividad</string>
+    <string name="add_task_select_date_time">Selecciona la fecha y hora</string>
+    <string name="add_task_explanation_text">Crear para mí hará que la tarea se visualice solo para tí. Crear para todos permitirá que la tarea se visualice para todos los miembros del Work Group.</string>
+
     <!-- AddMemberScreen -->
     <string name="add_member_title">Agregar Miembro</string>
     <string name="add_member_back_button">Volver</string>

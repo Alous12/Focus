@@ -13,9 +13,3 @@ data class WorkgroupMember(
     val name: String = "",
     val color: String = "#FFFFFF" // Color as a hex string
 )
-
-data class WorkgroupTask(
-    val id: String = "",
-    val name: String = "",
-    val implicatedMembers: List<WorkgroupMember> = emptyList()
-)

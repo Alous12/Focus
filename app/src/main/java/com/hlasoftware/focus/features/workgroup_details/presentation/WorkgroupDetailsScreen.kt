@@ -42,8 +42,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.hlasoftware.focus.R
+import com.hlasoftware.focus.features.add_task.presentation.AddTaskSheet
 import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupDetails
 import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupMember
 import com.hlasoftware.focus.features.workgroup_details.domain.model.WorkgroupTask
@@ -68,14 +71,25 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun WorkgroupDetailsScreen(
     workgroupId: String,
-    userId: String, // Added userId parameter
+    userId: String,
     onBack: () -> Unit,
     onAddMember: () -> Unit,
     viewModel: WorkgroupDetailsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
+    var showAddTaskSheet by remember { mutableStateOf(false) }
+
+    val currentState = uiState
+    if (showAddTaskSheet && currentState is WorkgroupDetailsUiState.Success) {
+        val memberIds = currentState.details.members.map { it.id }
+        AddTaskSheet(
+            workgroupId = workgroupId,
+            userId = userId,
+            memberIds = memberIds,
+            onDismiss = { showAddTaskSheet = false },
+        )
+    }
 
     LaunchedEffect(workgroupId, userId) { // Use userId in LaunchedEffect
         viewModel.loadWorkgroupDetails(workgroupId, userId) // Pass userId to ViewModel
@@ -110,7 +124,8 @@ fun WorkgroupDetailsScreen(
                     WorkgroupDetailsContent(
                         details = state.details,
                         snackbarHostState = snackbarHostState,
-                        onAddMember = onAddMember
+                        onAddMember = onAddMember,
+                        onAddTask = { showAddTaskSheet = true }
                     )
                 }
                 is WorkgroupDetailsUiState.Error -> {
@@ -130,6 +145,7 @@ fun WorkgroupDetailsContent(
     details: WorkgroupDetails,
     snackbarHostState: SnackbarHostState,
     onAddMember: () -> Unit,
+    onAddTask: () -> Unit,
 ) {
     val clipboardManager = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
@@ -240,7 +256,7 @@ fun WorkgroupDetailsContent(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = onAddTask,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(stringResource(id = R.string.workgroup_details_add_task_button))

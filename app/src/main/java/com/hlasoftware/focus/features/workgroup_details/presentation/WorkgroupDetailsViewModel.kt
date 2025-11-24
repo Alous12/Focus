@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 sealed class WorkgroupDetailsUiState {
     object Loading : WorkgroupDetailsUiState()
-    data class Success(val details: WorkgroupDetails, val isUserAdmin: Boolean) : WorkgroupDetailsUiState() // Added isUserAdmin
+    data class Success(val details: WorkgroupDetails, val isUserAdmin: Boolean) : WorkgroupDetailsUiState()
     data class Error(val message: String) : WorkgroupDetailsUiState()
 }
 

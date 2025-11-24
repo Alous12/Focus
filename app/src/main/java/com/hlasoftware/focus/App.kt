@@ -5,6 +5,7 @@ import com.google.firebase.FirebaseApp
 import com.hlasoftware.focus.di.appModule
 import com.hlasoftware.focus.features.activity_details.di.activityDetailsModule
 import com.hlasoftware.focus.features.add_member.di.addMemberModule
+import com.hlasoftware.focus.features.add_task.di.addTaskModule
 import com.hlasoftware.focus.features.create_workgroup.di.createWorkgroupModule
 import com.hlasoftware.focus.features.join_workgroup.di.joinWorkgroupModule
 import com.hlasoftware.focus.features.workgroup_details.di.workgroupDetailsModule
@@ -25,7 +26,8 @@ class App: Application() {
                 createWorkgroupModule, 
                 joinWorkgroupModule, 
                 workgroupDetailsModule,
-                addMemberModule
+                addMemberModule,
+                addTaskModule
             )
         }
     }
