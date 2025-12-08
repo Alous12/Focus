@@ -11,6 +11,6 @@ class SignUpUseCase(
         require(params.email.isNotBlank()) { "El correo es requerido." }
         require(params.password.length >= 6) { "La contraseña debe tener al menos 6 caracteres." }
 
-        return repo.register(params)
+        return repo.signUp(params)
     }
 }

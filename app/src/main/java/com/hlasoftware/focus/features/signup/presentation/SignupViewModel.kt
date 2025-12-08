@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.signup.domain.model.SignUpModel
 import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
+import com.hlasoftware.focus.features.signup.domain.usecase.GoogleSignUpUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,7 +25,8 @@ data class SignUpUiState(
 )
 
 class SignUpViewModel(
-    private val signUpUseCase: SignUpUseCase
+    private val signUpUseCase: SignUpUseCase,
+    private val googleSignUpUseCase: GoogleSignUpUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())
@@ -74,6 +76,30 @@ class SignUpViewModel(
                 }
             }
         }
+    }
+
+    fun onGoogleSignIn(token: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(loading = true, error = null)
+            try {
+                val user = googleSignUpUseCase(token)
+                _uiState.value = _uiState.value.copy(
+                    loading = false,
+                    user = user,
+                    success = true
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    loading = false,
+                    error = e.message ?: "Error al registrarse con Google",
+                    success = false
+                )
+            }
+        }
+    }
+
+    fun onGoogleSignInFailed() {
+        _uiState.value = _uiState.value.copy(error = "Error al registrarse con Google")
     }
 
     fun reset() {

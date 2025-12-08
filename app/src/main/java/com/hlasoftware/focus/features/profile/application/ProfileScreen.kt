@@ -1,8 +1,10 @@
 package com.hlasoftware.focus.features.profile.application
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -26,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.core.os.LocaleListCompat
 import coil3.compose.AsyncImage
 import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
@@ -76,9 +80,11 @@ fun ProfileScreen(
     var editingPost by remember { mutableStateOf<PostModel?>(null) }
     var showCreatePostScreen by remember { mutableStateOf(false) }
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(userId) {
         if (userId.isNotBlank()) {
@@ -116,7 +122,8 @@ fun ProfileScreen(
                         DrawerContent(
                             onCloseDrawer = { scope.launch { drawerState.close() } },
                             onLogout = onLogout,
-                            onDeleteAccount = { showDeleteAccountDialog = true }
+                            onDeleteAccount = { showDeleteAccountDialog = true },
+                            onLanguageSelected = { showLanguageDialog = true }
                         )
                     }
                 }
@@ -208,10 +215,25 @@ fun ProfileScreen(
             onDismiss = { showDeleteAccountDialog = false }
         )
     }
+
+    if (showLanguageDialog) {
+        LanguageDialog(
+            onDismiss = { showLanguageDialog = false },
+            onLanguageSelected = {
+                val appLocale = LocaleListCompat.forLanguageTags(it)
+                AppCompatDelegate.setApplicationLocales(appLocale)
+            }
+        )
+    }
 }
 
 @Composable
-fun DrawerContent(onCloseDrawer: () -> Unit, onLogout: () -> Unit, onDeleteAccount: () -> Unit) {
+fun DrawerContent(
+    onCloseDrawer: () -> Unit, 
+    onLogout: () -> Unit, 
+    onDeleteAccount: () -> Unit,
+    onLanguageSelected: () -> Unit
+) {
     ModalDrawerSheet(
         modifier = Modifier.fillMaxWidth(0.75f)
     ) {
@@ -233,6 +255,13 @@ fun DrawerContent(onCloseDrawer: () -> Unit, onLogout: () -> Unit, onDeleteAccou
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.clickable(onClick = onDeleteAccount)
             )
+            Spacer(Modifier.height(16.dp))
+            Text(
+                stringResource(id = R.string.profile_drawer_language),
+                color = Color.White,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable(onClick = onLanguageSelected)
+            )
             Spacer(Modifier.weight(1f))
             TextButton(onClick = onLogout) {
                 Text(
@@ -244,6 +273,31 @@ fun DrawerContent(onCloseDrawer: () -> Unit, onLogout: () -> Unit, onDeleteAccou
             }
         }
     }
+}
+
+@Composable
+fun LanguageDialog(onDismiss: () -> Unit, onLanguageSelected: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(id = R.string.language_dialog_title)) },
+        text = {
+            Column {
+                Text(
+                    text = stringResource(id = R.string.language_dialog_spanish),
+                    modifier = Modifier.clickable { onLanguageSelected("es-BO") }.fillMaxWidth().padding(vertical = 8.dp)
+                )
+                Text(
+                    text = stringResource(id = R.string.language_dialog_english),
+                    modifier = Modifier.clickable { onLanguageSelected("en-US") }.fillMaxWidth().padding(vertical = 8.dp)
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(id = R.string.language_dialog_cancel))
+            }
+        }
+    )
 }
 
 @Composable
