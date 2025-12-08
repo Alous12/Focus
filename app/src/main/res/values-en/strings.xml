@@ -2,9 +2,9 @@
 <!--
  Loco xml export: Android strings
  Project: Focus
- Locale: es-BO, Spanish (Bolivia)
+ Locale: en-US, English (USA)
  Exported by: HAROLD SEJAS LAZARTE
- Exported at: Mon, 08 Dec 2025 16:23:41 -0400
+ Exported at: Mon, 08 Dec 2025 16:23:42 -0400
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">focus</string>

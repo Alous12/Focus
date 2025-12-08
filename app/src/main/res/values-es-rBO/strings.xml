@@ -4,7 +4,7 @@
  Project: Focus
  Locale: es-BO, Spanish (Bolivia)
  Exported by: HAROLD SEJAS LAZARTE
- Exported at: Mon, 08 Dec 2025 16:23:41 -0400
+ Exported at: Mon, 08 Dec 2025 12:26:37 -0400
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">focus</string>
@@ -137,6 +137,7 @@
     <string name="profile_menu">Menú</string>
     <string name="profile_drawer_title">Configuración</string>
     <string name="profile_drawer_delete_account">Eliminar cuenta</string>
+    <string name="profile_drawer_language">Idioma</string>
     <string name="profile_drawer_logout">Cerrar sesión</string>
     <string name="profile_tab_info">Información</string>
     <string name="profile_tab_posts">Posts</string>
@@ -175,8 +176,7 @@
     <string name="delete_activity_dialog_title">¿Está seguro de eliminar esta actividad?</string>
     <string name="delete_activity_dialog_no">No</string>
     <string name="delete_activity_dialog_yes">Si</string>
-    <string name="profile_drawer_language">Language</string>
-    <!-- Language -->
+    <!-- Language Dialog -->
     <string name="language_dialog_title">Seleccionar Idioma</string>
     <string name="language_dialog_spanish">Español</string>
     <string name="language_dialog_english">Inglés</string>
