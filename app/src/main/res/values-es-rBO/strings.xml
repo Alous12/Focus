@@ -181,4 +181,5 @@
     <string name="language_dialog_spanish">Español</string>
     <string name="language_dialog_english">Inglés</string>
     <string name="language_dialog_cancel">Cancelar</string>
+    <string name="default_web_client_id">Cliente</string>
 </resources>

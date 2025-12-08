@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.login.domain.model.UserModel
 import com.hlasoftware.focus.features.login.domain.usecase.LoginUseCase
+import com.hlasoftware.focus.features.login.domain.usecase.GoogleSignInUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,7 +21,8 @@ data class LoginUiState(
 )
 
 class LoginViewModel(
-    private val loginUseCase: LoginUseCase
+    private val loginUseCase: LoginUseCase,
+    private val googleSignInUseCase: GoogleSignInUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -73,6 +75,30 @@ class LoginViewModel(
                 )
             }
         }
+    }
+
+    fun onGoogleSignIn(token: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(loading = true, error = null)
+            try {
+                val user = googleSignInUseCase(token)
+                _uiState.value = _uiState.value.copy(
+                    loading = false,
+                    user = user,
+                    success = true
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    loading = false,
+                    error = e.message ?: "Error al iniciar sesión con Google",
+                    success = false
+                )
+            }
+        }
+    }
+
+    fun onGoogleSignInFailed() {
+        _uiState.value = _uiState.value.copy(error = "Error al iniciar sesión con Google")
     }
 
     fun resetState() {

@@ -1,7 +1,10 @@
 package com.hlasoftware.focus.features.login.presentation
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,6 +25,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import org.koin.androidx.compose.koinViewModel
 import androidx.annotation.DrawableRes
 import com.hlasoftware.focus.R
@@ -39,6 +45,23 @@ fun LoginScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     var passwordVisible by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                account?.idToken?.let { token ->
+                    vm.onGoogleSignIn(token)
+                }
+            } catch (e: ApiException) {
+                vm.onGoogleSignInFailed()
+            }
+        }
+    )
+
 
     LaunchedEffect(uiState.success) {
         if (uiState.success && uiState.user != null) {
@@ -195,9 +218,16 @@ fun LoginScreen(
                     .padding(top = 16.dp),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                SocialButton(R.drawable.facebook_icon)
-                SocialButton(R.drawable.google_icon)
-                SocialButton(R.drawable.instagram_icon)
+                SocialButton(R.drawable.facebook_icon) {}
+                SocialButton(R.drawable.google_icon) {
+                    val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(context.getString(R.string.default_web_client_id))
+                        .requestEmail()
+                        .build()
+                    val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                    googleSignInLauncher.launch(googleSignInClient.signInIntent)
+                }
+                SocialButton(R.drawable.instagram_icon) {}
 
             }
 
@@ -229,7 +259,8 @@ fun LoginScreen(
 
 @Composable
 fun SocialButton(
-    @DrawableRes iconId: Int
+    @DrawableRes iconId: Int,
+    onClick: () -> Unit
 ) {
     Image(
         painter = painterResource(id = iconId),
@@ -238,5 +269,6 @@ fun SocialButton(
         modifier = Modifier
             .size(45.dp)
             .clip(RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
     )
 }

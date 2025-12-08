@@ -11,6 +11,8 @@ import com.hlasoftware.focus.features.create_activity.presentation.CreateActivit
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
 import com.hlasoftware.focus.features.home.presentation.HomeViewModel
 import com.hlasoftware.focus.features.login.data.repository.LoginRepository
+import com.hlasoftware.focus.features.login.domain.repository.ILoginRepository
+import com.hlasoftware.focus.features.login.domain.usecase.GoogleSignInUseCase
 import com.hlasoftware.focus.features.login.domain.usecase.LoginUseCase
 import com.hlasoftware.focus.features.login.presentation.LoginViewModel
 import com.hlasoftware.focus.features.posts.data.repository.PostRepositoryImpl
@@ -31,6 +33,7 @@ import com.hlasoftware.focus.features.routines.presentation.RoutinesViewModel
 import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import com.hlasoftware.focus.features.signup.data.repository.SignUpRepositoryImpl
 import com.hlasoftware.focus.features.signup.domain.repository.SignUpRepository
+import com.hlasoftware.focus.features.signup.domain.usecase.GoogleSignUpUseCase
 import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
 import com.hlasoftware.focus.features.signup.presentation.SignUpViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -41,21 +44,23 @@ val appModule = module {
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
     single { FirebaseStorage.getInstance() }
-    
+
     // Auth
-    single { LoginRepository(get()) }
+    single<ILoginRepository> { LoginRepository(get()) }
     factory { LoginUseCase(get()) }
-    viewModel { LoginViewModel(get()) }
+    factory { GoogleSignInUseCase(get()) }
+    viewModel { LoginViewModel(get(), get()) }
     single<SignUpRepository> { SignUpRepositoryImpl(get(), get()) }
     factory { SignUpUseCase(get()) }
-    viewModel { SignUpViewModel(get()) }
+    factory { GoogleSignUpUseCase(get<SignUpRepository>()) }
+    viewModel { SignUpViewModel(get(), get()) }
 
     // Profile
-    single<IProfileRepository> { ProfileRepository(firestore = get(), auth = get(), storage = get())}
+    single<IProfileRepository> { ProfileRepository(firestore = get(), auth = get(), storage = get()) }
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { DeleteAccountUseCase(get()) }
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) } 
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     // Home
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }

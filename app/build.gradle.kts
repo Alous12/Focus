@@ -50,7 +50,7 @@ dependencies {
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.5.0")) // Use the latest BoM version
-    implementation("com.google.firebase:firebase-auth")
+    //implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-firestore")
     implementation(libs.datastore)
@@ -93,5 +93,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
+// Versión puede variar
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+// Versión puede variar
 }
 

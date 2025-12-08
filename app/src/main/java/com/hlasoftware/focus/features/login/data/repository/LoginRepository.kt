@@ -1,15 +1,16 @@
 package com.hlasoftware.focus.features.login.data.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.hlasoftware.focus.features.login.domain.model.UserModel
-import kotlinx.coroutines.delay
+import com.hlasoftware.focus.features.login.domain.repository.ILoginRepository
 import kotlinx.coroutines.tasks.await
 
 class LoginRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
-) {
+) : ILoginRepository {
 
-    suspend fun login(email: String, password: String): UserModel {
+    override suspend fun login(email: String, password: String): UserModel {
         val result = auth.signInWithEmailAndPassword(email.trim(), password).await()
         val firebaseUser = result.user ?: throw IllegalStateException("Usuario no encontrado")
 
@@ -20,12 +21,23 @@ class LoginRepository(
         )
     }
 
-    fun currentUser(): UserModel? {
+    override suspend fun signInWithGoogle(token: String): UserModel {
+        val credential = GoogleAuthProvider.getCredential(token, null)
+        val result = auth.signInWithCredential(credential).await()
+        val firebaseUser = result.user ?: throw IllegalStateException("Usuario no encontrado")
+
+        return UserModel(
+            userId = firebaseUser.uid,
+            email = firebaseUser.email ?: ""
+        )
+    }
+
+    override fun currentUser(): UserModel? {
         val user = auth.currentUser
         return user?.let { UserModel(it.uid, it.email ?: "") }
     }
 
-    fun logout() {
+    override fun logout() {
         auth.signOut()
     }
 }

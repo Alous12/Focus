@@ -4,7 +4,7 @@
  Project: Focus
  Locale: en-US, English (USA)
  Exported by: HAROLD SEJAS LAZARTE
- Exported at: Mon, 08 Dec 2025 16:23:42 -0400
+ Exported at: Mon, 08 Dec 2025 17:20:08 -0400
 -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">focus</string>
@@ -181,4 +181,5 @@
     <string name="language_dialog_spanish">Español</string>
     <string name="language_dialog_english">Inglés</string>
     <string name="language_dialog_cancel">Cancelar</string>
+    <string name="default_web_client_id">Cliente</string>
 </resources>
