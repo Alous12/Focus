@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
+import com.hlasoftware.focus.features.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 
 // Estado de la UI para Home
 sealed class HomeUiState {
@@ -19,7 +22,8 @@ sealed class HomeUiState {
 }
 
 class HomeViewModel(
-    private val homeUseCase: HomeUseCase
+    private val homeUseCase: HomeUseCase,
+    private val notificationScheduler: NotificationScheduler
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -51,7 +55,23 @@ class HomeViewModel(
     ) {
         viewModelScope.launch {
             try {
-                homeUseCase.createActivity(userId, title, description, date, time)
+                val activityId = homeUseCase.createActivity(userId, title, description, date, time)
+
+                if (time != null && activityId.isNotEmpty()) {
+                    val dateTime = LocalDateTime.of(date, time)
+                    val notificationTime = dateTime.minusMinutes(5)
+                    val millis = notificationTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+                    if (millis > System.currentTimeMillis()) {
+                        notificationScheduler.scheduleNotification(
+                            activityId = activityId,
+                            title = "Actividad por comenzar",
+                            message = "La actividad '$title' comienza en 5 minutos.",
+                            scheduledTimeMillis = millis
+                        )
+                    }
+                }
+                
                 // Recargamos las actividades para la fecha en que se creó la nueva actividad
                 loadHome(userId, date)
             } catch (e: Exception) {
@@ -74,6 +94,7 @@ class HomeViewModel(
             viewModelScope.launch {
                 try {
                     homeUseCase.deleteActivity(it)
+                    notificationScheduler.cancelNotification(it)
                     loadHome(userId, date)
                 } catch (e: Exception) {
                     _uiState.value = HomeUiState.Error(e.message ?: "Error eliminando la actividad")

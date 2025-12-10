@@ -13,7 +13,7 @@ interface ActivityRepository {
         description: String,
         date: LocalDate,
         time: LocalTime?
-    )
+    ): String
     suspend fun deleteActivity(activityId: String)
     suspend fun getActivityById(activityId: String): ActivityModel?
 }

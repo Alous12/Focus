@@ -37,7 +37,7 @@ val localeMapping = mapOf(
 // ====================================================================
 // TAREA DE DESCARGA
 // ====================================================================
-tasks.register("downloadLocoStrings") {
+/*tasks.register("downloadLocoStrings") {
     group = "localization"
     description = "Downloads strings.xml files from Localise.biz via API"
 
@@ -57,7 +57,7 @@ tasks.register("downloadLocoStrings") {
             )
         }
     }
-}
+}*/
 
 // ====================================================================
 // FUNCIÓN DE DESCARGA POR URL

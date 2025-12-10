@@ -176,6 +176,11 @@
     <string name="delete_activity_dialog_no">No</string>
     <string name="delete_activity_dialog_yes">Si</string>
     <string name="profile_drawer_language">Language</string>
+    <!-- Delete Routine Dialog -->
+    <string name="delete_routine_dialog_title">¿Está seguro de eliminar esta rutina?</string>
+    <string name="delete_routine_dialog_no">No</string>
+    <string name="delete_routine_dialog_yes">Si</string>
+    <string name="routine_card_delete">Eliminar rutina</string>
     <!-- Language -->
     <string name="language_dialog_title">Seleccionar Idioma</string>
     <string name="language_dialog_spanish">Español</string>

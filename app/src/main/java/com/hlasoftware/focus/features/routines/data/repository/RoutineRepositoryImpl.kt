@@ -47,4 +47,14 @@ class RoutineRepositoryImpl(
             Result.failure(e)
         }
     }
+
+    override suspend fun deleteRoutine(routineId: String): Result<Unit> {
+        return try {
+            firestore.collection("users").document(userId).collection("routines").document(routineId)
+                .delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

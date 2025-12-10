@@ -15,6 +15,7 @@ import com.hlasoftware.focus.features.login.domain.repository.ILoginRepository
 import com.hlasoftware.focus.features.login.domain.usecase.GoogleSignInUseCase
 import com.hlasoftware.focus.features.login.domain.usecase.LoginUseCase
 import com.hlasoftware.focus.features.login.presentation.LoginViewModel
+import com.hlasoftware.focus.features.notifications.NotificationScheduler
 import com.hlasoftware.focus.features.posts.data.repository.PostRepositoryImpl
 import com.hlasoftware.focus.features.posts.domain.repository.IPostRepository
 import com.hlasoftware.focus.features.posts.domain.usecase.CreatePostUseCase
@@ -26,16 +27,18 @@ import com.hlasoftware.focus.features.profile.data.repository.ProfileRepository
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
+import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import com.hlasoftware.focus.features.routines.data.repository.RoutineRepositoryImpl
 import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
+import com.hlasoftware.focus.features.routines.domain.usecase.DeleteRoutineUseCase
 import com.hlasoftware.focus.features.routines.domain.usecase.GetRoutinesUseCase
 import com.hlasoftware.focus.features.routines.presentation.RoutinesViewModel
-import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import com.hlasoftware.focus.features.signup.data.repository.SignUpRepositoryImpl
 import com.hlasoftware.focus.features.signup.domain.repository.SignUpRepository
 import com.hlasoftware.focus.features.signup.domain.usecase.GoogleSignUpUseCase
 import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
 import com.hlasoftware.focus.features.signup.presentation.SignUpViewModel
+import org.koin.android.ext.koin.androidContext
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
@@ -44,6 +47,9 @@ val appModule = module {
     single { FirebaseAuth.getInstance() }
     single { FirebaseFirestore.getInstance() }
     single { FirebaseStorage.getInstance() }
+
+    // Notifications
+    single { NotificationScheduler(androidContext()) }
 
     // Auth
     single<ILoginRepository> { LoginRepository(get()) }
@@ -65,13 +71,14 @@ val appModule = module {
     // Home
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
     factory { HomeUseCase(get()) }
-    viewModel { HomeViewModel(get()) }
-    viewModel { CreateActivityViewModel(get(), get()) }
+    viewModel { HomeViewModel(get(), get()) }
+    viewModel { CreateActivityViewModel(get(), get(), get()) }
 
     // Routines
     single<RoutineRepository> { RoutineRepositoryImpl(get(), get()) }
     factory { GetRoutinesUseCase(get()) }
-    viewModel { RoutinesViewModel(get()) }
+    factory { DeleteRoutineUseCase(get()) }
+    viewModel { RoutinesViewModel(get(), get()) }
 
     // Add Routine
     factory { AddRoutineUseCase(get()) }

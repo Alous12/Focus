@@ -17,8 +17,8 @@ class HomeUseCase(private val activityRepository: ActivityRepository) {
         description: String,
         date: LocalDate,
         time: LocalTime?
-    ) {
-        activityRepository.createActivity(userId, title, description, date, time)
+    ): String {
+        return activityRepository.createActivity(userId, title, description, date, time)
     }
 
     suspend fun deleteActivity(activityId: String) {

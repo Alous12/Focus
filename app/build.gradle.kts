@@ -39,9 +39,9 @@ android {
     kotlinOptions { jvmTarget = "11" }
     buildFeatures { compose = true }
 
-    tasks.named("preBuild").configure {
+    /*tasks.named("preBuild").configure {
         dependsOn("downloadLocoStrings")
-    }
+    }*/
 }
 
 dependencies {
