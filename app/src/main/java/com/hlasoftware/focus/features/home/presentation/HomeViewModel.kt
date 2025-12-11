@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.home.domain.usecase.HomeUseCase
+import com.hlasoftware.focus.features.notifications.NotificationScheduler
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 
 // Estado de la UI para Home
 sealed class HomeUiState {
@@ -18,19 +21,37 @@ sealed class HomeUiState {
     data class Error(val message: String) : HomeUiState()
 }
 
+interface IHomeViewModel {
+    val uiState: StateFlow<HomeUiState>
+    val showDeleteConfirmationDialog: StateFlow<Boolean>
+    fun loadHome(userId: String, date: LocalDate)
+    fun createActivity(
+        userId: String,
+        title: String,
+        description: String,
+        date: LocalDate,
+        time: LocalTime?
+    )
+    fun onActivityOptionsClicked(activityId: String)
+    fun onDeleteActivityClicked(activityId: String)
+    fun onConfirmDeleteActivity(userId: String, date: LocalDate)
+    fun onDismissDeleteActivity()
+}
+
 class HomeViewModel(
-    private val homeUseCase: HomeUseCase
-) : ViewModel() {
+    private val homeUseCase: HomeUseCase,
+    private val notificationScheduler: NotificationScheduler
+) : ViewModel(), IHomeViewModel {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState
+    override val uiState: StateFlow<HomeUiState> = _uiState
 
     private val _showDeleteConfirmationDialog = MutableStateFlow(false)
-    val showDeleteConfirmationDialog = _showDeleteConfirmationDialog.asStateFlow()
+    override val showDeleteConfirmationDialog = _showDeleteConfirmationDialog.asStateFlow()
 
     private var activityIdToDelete: String? = null
 
-    fun loadHome(userId: String, date: LocalDate) {
+    override fun loadHome(userId: String, date: LocalDate) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
@@ -42,7 +63,7 @@ class HomeViewModel(
         }
     }
 
-    fun createActivity(
+    override fun createActivity(
         userId: String,
         title: String,
         description: String,
@@ -51,7 +72,23 @@ class HomeViewModel(
     ) {
         viewModelScope.launch {
             try {
-                homeUseCase.createActivity(userId, title, description, date, time)
+                val activityId = homeUseCase.createActivity(userId, title, description, date, time)
+
+                if (time != null && activityId.isNotEmpty()) {
+                    val dateTime = LocalDateTime.of(date, time)
+                    val notificationTime = dateTime.minusMinutes(5)
+                    val millis = notificationTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+                    if (millis > System.currentTimeMillis()) {
+                        notificationScheduler.scheduleNotification(
+                            activityId = activityId,
+                            title = "Actividad por comenzar",
+                            message = "La actividad '$title' comienza en 5 minutos.",
+                            scheduledTimeMillis = millis
+                        )
+                    }
+                }
+                
                 // Recargamos las actividades para la fecha en que se creó la nueva actividad
                 loadHome(userId, date)
             } catch (e: Exception) {
@@ -60,20 +97,21 @@ class HomeViewModel(
         }
     }
 
-    fun onActivityOptionsClicked(activityId: String) {
+    override fun onActivityOptionsClicked(activityId: String) {
         // Not used yet, will be used to show the dropdown
     }
 
-    fun onDeleteActivityClicked(activityId: String) {
+    override fun onDeleteActivityClicked(activityId: String) {
         activityIdToDelete = activityId
         _showDeleteConfirmationDialog.value = true
     }
 
-    fun onConfirmDeleteActivity(userId: String, date: LocalDate) {
+    override fun onConfirmDeleteActivity(userId: String, date: LocalDate) {
         activityIdToDelete?.let {
             viewModelScope.launch {
                 try {
                     homeUseCase.deleteActivity(it)
+                    notificationScheduler.cancelNotification(it)
                     loadHome(userId, date)
                 } catch (e: Exception) {
                     _uiState.value = HomeUiState.Error(e.message ?: "Error eliminando la actividad")
@@ -85,7 +123,7 @@ class HomeViewModel(
         }
     }
 
-    fun onDismissDeleteActivity() {
+    override fun onDismissDeleteActivity() {
         _showDeleteConfirmationDialog.value = false
         activityIdToDelete = null
     }

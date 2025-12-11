@@ -11,12 +11,30 @@ import com.hlasoftware.focus.features.join_workgroup.di.joinWorkgroupModule
 import com.hlasoftware.focus.features.workgroup_details.di.workgroupDetailsModule
 import com.hlasoftware.focus.features.workgroups.di.workgroupsModule
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.startKoin
+import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.context.GlobalContext.stopKoin
 
 class App: Application() {
     override fun onCreate() {
         super.onCreate()
         FirebaseApp.initializeApp(this)
+        startKoin {
+            androidContext(this@App)
+            modules(
+                appModule, 
+                activityDetailsModule, 
+                workgroupsModule, 
+                createWorkgroupModule, 
+                joinWorkgroupModule, 
+                workgroupDetailsModule,
+                addMemberModule,
+                addTaskModule
+            )
+        }
+    }
+
+    fun restartKoin() {
+        stopKoin()
         startKoin {
             androidContext(this@App)
             modules(

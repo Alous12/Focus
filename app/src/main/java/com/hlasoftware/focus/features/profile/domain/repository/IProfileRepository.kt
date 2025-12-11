@@ -9,4 +9,5 @@ interface IProfileRepository {
     suspend fun updateSummary(userId: String, summary: String): Result<Unit>
     suspend fun updateProfilePicture(userId: String, imageUri: Uri): Result<Unit>
     suspend fun deleteAccount(userId: String): Result<Unit>
+    suspend fun updateLanguage(userId: String, language: String): Result<Unit>
 }

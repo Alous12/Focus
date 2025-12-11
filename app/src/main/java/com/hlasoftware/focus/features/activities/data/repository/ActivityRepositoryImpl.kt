@@ -54,8 +54,8 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
         description: String,
         date: LocalDate,
         time: LocalTime?
-    ) {
-        try {
+    ): String {
+        return try {
             val activityData = hashMapOf(
                 "userId" to userId,
                 "title" to title,
@@ -66,11 +66,14 @@ class ActivityRepositoryImpl(private val firestore: FirebaseFirestore) : Activit
                 "type" to "TASK"
             )
 
-            firestore.collection("activities")
-                .add(activityData)
-                .await()
+            // Generamos el ID localmente y usamos set() para soporte offline
+            val docRef = firestore.collection("activities").document()
+            docRef.set(activityData)
+            
+            docRef.id
         } catch (e: Exception) {
             e.printStackTrace()
+            ""
         }
     }
 

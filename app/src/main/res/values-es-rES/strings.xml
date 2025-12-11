@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
- Loco xml export: Android strings
- Project: Focus
- Locale: en-US, English (USA)
- Exported by: HAROLD SEJAS LAZARTE
- Exported at: Wed, 10 Dec 2025 16:07:58 -0400
--->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">focus</string>
     <!-- HomeScreen -->
@@ -25,7 +18,7 @@
     <!-- DateSelector -->
     <string name="date_selector_previous_day">Día anterior</string>
     <string name="date_selector_next_day">Día siguiente</string>
-    <string name="date_format">EEEE, d \'de\' MMMM</string>
+    <string name="date_format">"EEEE, d 'de' MMMM"</string>
     <!-- ActivityCard -->
     <string name="activity_card_options">Opciones</string>
     <string name="activity_start_end_time">%1$s - %2$s</string>
@@ -34,11 +27,11 @@
     <string name="activity_details_title">Detalle de la Actividad</string>
     <string name="activity_details_back_button">Volver</string>
     <!-- WorkgroupsScreen -->
-    <string name="workgroups_title">Work Groups</string>
+    <string name="workgroups_title">Grupos de Trabajo</string>
     <string name="workgroups_add_button">Añadir grupo de trabajo</string>
     <string name="workgroups_no_groups">No perteneces a ningún grupo de trabajo.</string>
     <string name="workgroup_card_admin_label">Admin. %1$s</string>
-    <string name="workgroup_options_menu_title">Opciones de Work Group</string>
+    <string name="workgroup_options_menu_title">Opciones de Grupo de Trabajo</string>
     <string name="workgroup_options_create">Crear un grupo</string>
     <string name="workgroup_options_join">Unirse a un grupo</string>
     <string name="workgroup_delete_option">Eliminar grupo</string>
@@ -48,13 +41,13 @@
     <!-- CreateWorkgroupSheet -->
     <string name="create_workgroup_title">Crear Grupo</string>
     <string name="create_workgroup_close">Cerrar</string>
-    <string name="create_workgroup_image_prompt">Haz click para seleccionar una imagen para el Work Group</string>
-    <string name="create_workgroup_name_label">Nombre del Work Group</string>
-    <string name="create_workgroup_description_label">Descripcion del Work Group</string>
-    <string name="create_workgroup_add_members_button">Agregar Miembro/s</string>
+    <string name="create_workgroup_image_prompt">Haz clic para seleccionar una imagen para el Grupo de Trabajo</string>
+    <string name="create_workgroup_name_label">Nombre del Grupo de Trabajo</string>
+    <string name="create_workgroup_description_label">Descripción del Grupo de Trabajo</string>
+    <string name="create_workgroup_add_members_button">Agregar Miembro(s)</string>
     <string name="create_workgroup_add_members_later_prompt">Si no agregas algún miembro ahora, podrás hacerlo después sin ningún problema.</string>
     <!-- JoinWorkgroupScreen -->
-    <string name="join_workgroup_title">Unirse a un Work Group</string>
+    <string name="join_workgroup_title">Unirse a un Grupo de Trabajo</string>
     <string name="join_workgroup_code_placeholder">Ingresa el código del grupo</string>
     <string name="join_workgroup_cancel_button">Cancelar</string>
     <string name="join_workgroup_join_button">Unirse</string>
@@ -75,7 +68,7 @@
     <string name="workgroup_details_code_label">Código del Grupo</string>
     <string name="workgroup_details_copy_code_success">Código copiado al portapapeles</string>
     <string name="workgroup_details_task_implicated_label">Implicados:</string>
-    <string name="workgroup_details_add_member_button">Agregar Miembro/s</string>
+    <string name="workgroup_details_add_member_button">Agregar Miembro(s)</string>
     <string name="workgroup_details_add_task_button">Agregar Tarea</string>
     <!-- Add Task -->
     <string name="add_task_create_for_me">Crear para mí</string>
@@ -83,7 +76,7 @@
     <string name="add_task_name_label">Nombre de la Actividad</string>
     <string name="add_task_description_label">Descripción de la Actividad</string>
     <string name="add_task_select_date_time">Selecciona la fecha y hora</string>
-    <string name="add_task_explanation_text">Crear para mí hará que la tarea se visualice solo para tí. Crear para todos permitirá que la tarea se visualice para todos los miembros del Work Group.</string>
+    <string name="add_task_explanation_text">Crear para mí hará que la tarea se visualice solo para ti. Crear para todos permitirá que la tarea se visualice para todos los miembros del Grupo de Trabajo.</string>
     <!-- AddMemberScreen -->
     <string name="add_member_title">Agregar Miembro</string>
     <string name="add_member_back_button">Volver</string>
@@ -103,10 +96,10 @@
     <string name="login_password_label">Ingresa tu contraseña</string>
     <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="login_button">Inicia Sesión</string>
-    <string name="login_social_prompt">ó inicia sesión con</string>
+    <string name="login_social_prompt">o inicia sesión con</string>
     <string name="login_no_account">¿No tienes una cuenta?</string>
     <string name="login_register">Regístrate</string>
-    <string name="login_toggle_password_visibility">Toggle password visibility</string>
+    <string name="login_toggle_password_visibility">Alternar visibilidad de contraseña</string>
     <!-- CreatePostScreen -->
     <string name="create_post_title">Crear Post</string>
     <string name="edit_post_title">Editar Post</string>
@@ -123,14 +116,14 @@
     <string name="signup_email_label">Ingresa tu número o correo electrónico</string>
     <string name="signup_password_label">Ingresa tu contraseña</string>
     <string name="signup_confirm_password_label">Confirma tu contraseña</string>
-    <string name="signup_toggle_password_visibility">Toggle password visibility</string>
-    <string name="signup_toggle_confirm_password_visibility">Toggle confirm password visibility</string>
+    <string name="signup_toggle_password_visibility">Alternar visibilidad de contraseña</string>
+    <string name="signup_toggle_confirm_password_visibility">Alternar visibilidad de la confirmación de contraseña</string>
     <string name="signup_success_message">¡Registro exitoso!</string>
     <string name="signup_button">Regístrate</string>
-    <string name="signup_social_prompt">ó regístrate con</string>
+    <string name="signup_social_prompt">o regístrate con</string>
     <string name="signup_has_account">¿Ya tienes una cuenta?</string>
     <string name="signup_login">Inicia Sesión</string>
-    <string name="datepicker_ok">OK</string>
+    <string name="datepicker_ok">Aceptar</string>
     <string name="datepicker_cancel">Cancelar</string>
     <!-- ProfileScreen -->
     <string name="profile_title">Perfil</string>
@@ -154,7 +147,7 @@
     <string name="profile_edit_dialog_cancel">Cancelar</string>
     <string name="profile_posts_create_post">Crear post</string>
     <string name="profile_posts_no_posts">No hay posts para mostrar.</string>
-    <string name="profile_post_item_image_description">Post image</string>
+    <string name="profile_post_item_image_description">Imagen del post</string>
     <string name="profile_post_item_created">Creado: %1$s</string>
     <string name="profile_post_item_edited">Editado: %1$s</string>
     <string name="profile_post_item_edit">Editar</string>
@@ -170,16 +163,22 @@
     <!-- Delete Account Dialog -->
     <string name="delete_account_dialog_title">¿Está seguro de eliminar su cuenta?</string>
     <string name="delete_account_dialog_no">No</string>
-    <string name="delete_account_dialog_yes">Si</string>
+    <string name="delete_account_dialog_yes">Sí</string>
     <!-- Delete Activity Dialog -->
     <string name="delete_activity_dialog_title">¿Está seguro de eliminar esta actividad?</string>
     <string name="delete_activity_dialog_no">No</string>
-    <string name="delete_activity_dialog_yes">Si</string>
-    <string name="profile_drawer_language">Language</string>
+    <string name="delete_activity_dialog_yes">Sí</string>
+    <string name="profile_drawer_language">Idioma</string>
+    <!-- Delete Routine Dialog -->
+    <string name="delete_routine_dialog_title">¿Está seguro de eliminar esta rutina?</string>
+    <string name="delete_routine_dialog_no">No</string>
+    <string name="delete_routine_dialog_yes">Sí</string>
+    <string name="routine_card_delete">Eliminar rutina</string>
     <!-- Language -->
     <string name="language_dialog_title">Seleccionar Idioma</string>
-    <string name="language_dialog_spanish">Español</string>
-    <string name="language_dialog_english">Inglés</string>
+    <string name="language_dialog_spanish_bo">Español (Bolivia)</string>
+    <string name="language_dialog_spanish_es">Español (España)</string>
+    <string name="language_dialog_english_us">Inglés (EE.UU.)</string>
     <string name="language_dialog_cancel">Cancelar</string>
     <string name="default_web_client_id">Cliente</string>
 </resources>

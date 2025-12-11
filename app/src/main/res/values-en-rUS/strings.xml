@@ -97,7 +97,7 @@
     <string name="login_forgot_password">Forgot your password?</string>
     <string name="login_button">Log In</string>
     <string name="login_social_prompt">or log in with</string>
-    <string name="login_no_account">"Don't have an account?"</string>
+    <string name="login_no_account">Don\'t have an account?</string>
     <string name="login_register">Sign Up</string>
     <string name="login_toggle_password_visibility">Toggle password visibility</string>
     <!-- CreatePostScreen -->
