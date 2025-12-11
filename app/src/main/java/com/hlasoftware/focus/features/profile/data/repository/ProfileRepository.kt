@@ -96,6 +96,18 @@ class ProfileRepository(
         }
     }
 
+    override suspend fun updateLanguage(userId: String, language: String): Result<Unit> {
+        if (userId.isBlank()) {
+            return Result.failure(IllegalArgumentException("User ID cannot be blank."))
+        }
+        return try {
+            firestore.collection("users").document(userId).update("language", language).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private suspend fun uploadProfileImage(userId: String, uri: Uri): String {
         val storageRef = storage.reference.child("profile_pictures/$userId")
         storageRef.putFile(uri).await()

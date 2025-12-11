@@ -51,7 +51,7 @@ import java.util.Locale
 @Composable
 fun HomeScreen(
     userId: String,
-    homeViewModel: HomeViewModel = koinViewModel(),
+    homeViewModel: IHomeViewModel = koinViewModel<HomeViewModel>(),
     selectedDate: LocalDate,
     onDateChange: (LocalDate) -> Unit,
     showAddActivitySheet: Boolean,
@@ -176,7 +176,7 @@ fun HomeScreen(
 @Composable
 fun AddActivityContent(
     userId: String,
-    homeViewModel: HomeViewModel,
+    homeViewModel: IHomeViewModel,
     onClose: () -> Unit,
 ) {
     var title by remember { mutableStateOf("") }

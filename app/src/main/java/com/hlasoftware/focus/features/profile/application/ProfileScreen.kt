@@ -1,6 +1,8 @@
 package com.hlasoftware.focus.features.profile.application
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Edit
@@ -28,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.colorResource
@@ -40,8 +44,11 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.core.os.LocaleListCompat
 import coil3.compose.AsyncImage
+import com.hlasoftware.focus.App
+import com.hlasoftware.focus.MainActivity
 import com.hlasoftware.focus.R
 import com.hlasoftware.focus.features.home.domain.model.ActivityModel
 import com.hlasoftware.focus.features.posts.domain.model.PostModel
@@ -217,11 +224,15 @@ fun ProfileScreen(
     }
 
     if (showLanguageDialog) {
+        val context = LocalContext.current
         LanguageDialog(
             onDismiss = { showLanguageDialog = false },
             onLanguageSelected = {
-                val appLocale = LocaleListCompat.forLanguageTags(it)
-                AppCompatDelegate.setApplicationLocales(appLocale)
+                profileViewModel.updateLanguage(userId, it)
+
+                val intent = Intent(context, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                context.startActivity(intent)
             }
         )
     }
@@ -283,12 +294,16 @@ fun LanguageDialog(onDismiss: () -> Unit, onLanguageSelected: (String) -> Unit) 
         text = {
             Column {
                 Text(
-                    text = stringResource(id = R.string.language_dialog_spanish),
+                    text = stringResource(id = R.string.language_dialog_english_us),
+                    modifier = Modifier.clickable { onLanguageSelected("en-US") }.fillMaxWidth().padding(vertical = 8.dp)
+                )
+                Text(
+                    text = stringResource(id = R.string.language_dialog_spanish_bo),
                     modifier = Modifier.clickable { onLanguageSelected("es-BO") }.fillMaxWidth().padding(vertical = 8.dp)
                 )
                 Text(
-                    text = stringResource(id = R.string.language_dialog_english),
-                    modifier = Modifier.clickable { onLanguageSelected("en-US") }.fillMaxWidth().padding(vertical = 8.dp)
+                    text = stringResource(id = R.string.language_dialog_spanish_es),
+                    modifier = Modifier.clickable { onLanguageSelected("es-ES") }.fillMaxWidth().padding(vertical = 8.dp)
                 )
             }
         },
@@ -357,15 +372,27 @@ fun ProfileHeader(profile: ProfileModel, selectedTab: ProfileTab, onTabSelected:
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = profile.pathUrl,
-            contentDescription = stringResource(id = R.string.profile_header_photo_description),
-            modifier = Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
-            contentScale = ContentScale.Crop
-        )
+        if (profile.pathUrl.isNotBlank()) {
+            AsyncImage(
+                model = profile.pathUrl,
+                contentDescription = stringResource(id = R.string.profile_header_photo_description),
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        } else {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = stringResource(id = R.string.profile_header_photo_description),
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(CircleShape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape),
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
         ProfileTabBar(selectedTab, onTabSelected)
     }
@@ -535,6 +562,7 @@ fun PostsContent(
 
 @Composable
 fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
+    val locale = LocalConfiguration.current.locales[0]
     Card(modifier = Modifier.fillMaxWidth()) {
         Column {
             post.imageUrl?.let {
@@ -549,7 +577,7 @@ fun PostItem(post: PostModel, onEdit: () -> Unit, onDelete: () -> Unit) {
                 text = post.text,
                 modifier = Modifier.padding(16.dp)
             )
-            val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+            val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", locale)
             post.createdAt?.let {
                 Text(
                     text = stringResource(id = R.string.profile_post_item_created, dateFormat.format(it)),
@@ -671,6 +699,7 @@ fun Day(day: CalendarDay, activities: List<ActivityModel>, onClick: (LocalDate) 
 
 @Composable
 fun MonthHeader(yearMonth: YearMonth) {
+    val locale = LocalConfiguration.current.locales[0]
     val formatter = DateTimeFormatter.ofPattern("MMMM yyyy")
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
@@ -688,7 +717,7 @@ fun MonthHeader(yearMonth: YearMonth) {
             Text(
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.Center,
-                text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
+                text = dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, locale),
             )
         }
     }

@@ -22,6 +22,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        compose = true
+    }
+
+    androidResources {
+        localeFilters.addAll(listOf("en-rUS", "es-rBO", "es-rES"))
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -37,7 +45,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions { jvmTarget = "11" }
-    buildFeatures { compose = true }
 
     /*tasks.named("preBuild").configure {
         dependsOn("downloadLocoStrings")
@@ -74,7 +81,7 @@ dependencies {
     // Otros
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.retrofit)
-    implementation(libs.converter.gson.v290)
+    implementation(libs.converter.gson)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.navigation)
     implementation(libs.koin.androidx.compose)
@@ -88,15 +95,22 @@ dependencies {
 
     // Tests
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.12.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation("org.mockito:mockito-android:5.12.0")
+    androidTestImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("com.google.firebase:firebase-auth-ktx:22.3.0")
 // Versión puede variar
     implementation("com.google.android.gms:play-services-auth:20.7.0")
-// Versión puede variar
 }
 

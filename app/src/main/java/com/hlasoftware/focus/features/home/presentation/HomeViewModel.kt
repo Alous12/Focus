@@ -21,20 +21,37 @@ sealed class HomeUiState {
     data class Error(val message: String) : HomeUiState()
 }
 
+interface IHomeViewModel {
+    val uiState: StateFlow<HomeUiState>
+    val showDeleteConfirmationDialog: StateFlow<Boolean>
+    fun loadHome(userId: String, date: LocalDate)
+    fun createActivity(
+        userId: String,
+        title: String,
+        description: String,
+        date: LocalDate,
+        time: LocalTime?
+    )
+    fun onActivityOptionsClicked(activityId: String)
+    fun onDeleteActivityClicked(activityId: String)
+    fun onConfirmDeleteActivity(userId: String, date: LocalDate)
+    fun onDismissDeleteActivity()
+}
+
 class HomeViewModel(
     private val homeUseCase: HomeUseCase,
     private val notificationScheduler: NotificationScheduler
-) : ViewModel() {
+) : ViewModel(), IHomeViewModel {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
-    val uiState: StateFlow<HomeUiState> = _uiState
+    override val uiState: StateFlow<HomeUiState> = _uiState
 
     private val _showDeleteConfirmationDialog = MutableStateFlow(false)
-    val showDeleteConfirmationDialog = _showDeleteConfirmationDialog.asStateFlow()
+    override val showDeleteConfirmationDialog = _showDeleteConfirmationDialog.asStateFlow()
 
     private var activityIdToDelete: String? = null
 
-    fun loadHome(userId: String, date: LocalDate) {
+    override fun loadHome(userId: String, date: LocalDate) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
             try {
@@ -46,7 +63,7 @@ class HomeViewModel(
         }
     }
 
-    fun createActivity(
+    override fun createActivity(
         userId: String,
         title: String,
         description: String,
@@ -80,16 +97,16 @@ class HomeViewModel(
         }
     }
 
-    fun onActivityOptionsClicked(activityId: String) {
+    override fun onActivityOptionsClicked(activityId: String) {
         // Not used yet, will be used to show the dropdown
     }
 
-    fun onDeleteActivityClicked(activityId: String) {
+    override fun onDeleteActivityClicked(activityId: String) {
         activityIdToDelete = activityId
         _showDeleteConfirmationDialog.value = true
     }
 
-    fun onConfirmDeleteActivity(userId: String, date: LocalDate) {
+    override fun onConfirmDeleteActivity(userId: String, date: LocalDate) {
         activityIdToDelete?.let {
             viewModelScope.launch {
                 try {
@@ -106,7 +123,7 @@ class HomeViewModel(
         }
     }
 
-    fun onDismissDeleteActivity() {
+    override fun onDismissDeleteActivity() {
         _showDeleteConfirmationDialog.value = false
         activityIdToDelete = null
     }

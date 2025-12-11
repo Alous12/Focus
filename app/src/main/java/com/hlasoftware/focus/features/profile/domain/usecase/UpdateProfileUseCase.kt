@@ -6,4 +6,5 @@ import com.hlasoftware.focus.features.profile.domain.repository.IProfileReposito
 class UpdateProfileUseCase(private val repository: IProfileRepository) {
     suspend fun updateSummary(userId: String, summary: String) = repository.updateSummary(userId, summary)
     suspend fun updateProfilePicture(userId: String, imageUri: Uri) = repository.updateProfilePicture(userId, imageUri)
+    suspend fun updateLanguage(userId: String, language: String) = repository.updateLanguage(userId, language)
 }

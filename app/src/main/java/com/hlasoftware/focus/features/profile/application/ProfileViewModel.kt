@@ -10,13 +10,13 @@ import com.hlasoftware.focus.features.posts.domain.usecase.CreatePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.DeletePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.GetPostsUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
+import com.hlasoftware.focus.features.profile.data.repository.LanguageRepository
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.UpdateProfileUseCase
 import com.hlasoftware.focus.features.routines.domain.model.Routine
 import com.hlasoftware.focus.features.routines.domain.repository.RoutineRepository
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +32,7 @@ class ProfileViewModel(
     private val deletePostUseCase: DeletePostUseCase,
     private val deleteAccountUseCase: DeleteAccountUseCase,
     private val routineRepository: RoutineRepository,
+    private val languageRepository: LanguageRepository,
 ) : ViewModel() {
 
     sealed class ProfileUiState {
@@ -54,7 +55,7 @@ class ProfileViewModel(
     val routines: StateFlow<List<Routine>> = _routines.asStateFlow()
 
     fun showProfile(userId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _state.value = ProfileUiState.Loading
             val resultProfile = getProfileUseCase.invoke(userId)
             resultProfile.fold(
@@ -77,13 +78,13 @@ class ProfileViewModel(
     }
 
     fun loadActivitiesForMonth(userId: String, year: Int, month: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             _activities.value = activityRepository.getActivitiesForMonth(userId, year, month)
         }
     }
 
     fun updateSummary(userId: String, summary: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             updateProfileUseCase.updateSummary(userId, summary).onSuccess {
                 showProfile(userId) // Recargar perfil
             }
@@ -91,8 +92,17 @@ class ProfileViewModel(
     }
 
     fun updateProfilePicture(userId: String, imageUri: Uri) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             updateProfileUseCase.updateProfilePicture(userId, imageUri).onSuccess {
+                showProfile(userId) // Recargar perfil
+            }
+        }
+    }
+
+    fun updateLanguage(userId: String, language: String) {
+        viewModelScope.launch {
+            languageRepository.saveLanguage(language)
+            updateProfileUseCase.updateLanguage(userId, language).onSuccess {
                 showProfile(userId) // Recargar perfil
             }
         }
@@ -107,25 +117,25 @@ class ProfileViewModel(
     }
 
     fun createPost(userId: String, text: String, imageUri: Uri?) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             createPostUseCase(userId, text, imageUri)
         }
     }
 
     fun updatePost(postId: String, text: String, imageUri: Uri?) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             updatePostUseCase(postId, text, imageUri)
         }
     }
 
     fun deletePost(postId: String) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             deletePostUseCase(postId)
         }
     }
 
     fun deleteAccount(userId: String, onComplete: () -> Unit) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             deleteAccountUseCase(userId).onSuccess {
                 onComplete()
             }

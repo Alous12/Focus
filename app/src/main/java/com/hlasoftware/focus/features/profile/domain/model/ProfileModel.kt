@@ -12,5 +12,6 @@ data class ProfileModel(
 
     // Campos esenciales para la UI, inicializados a vacío
     val pathUrl: String = "",
-    val summary: String = ""
+    val summary: String = "",
+    val language: String = "" // Añadido para guardar el idioma del usuario
 )

@@ -23,6 +23,7 @@ import com.hlasoftware.focus.features.posts.domain.usecase.DeletePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.GetPostsUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
 import com.hlasoftware.focus.features.profile.application.ProfileViewModel
+import com.hlasoftware.focus.features.profile.data.repository.LanguageRepository
 import com.hlasoftware.focus.features.profile.data.repository.ProfileRepository
 import com.hlasoftware.focus.features.profile.domain.repository.IProfileRepository
 import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
@@ -66,7 +67,8 @@ val appModule = module {
     factory { GetProfileUseCase(get()) }
     factory { UpdateProfileUseCase(get()) }
     factory { DeleteAccountUseCase(get()) }
-    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get()) }
+    single { LanguageRepository(androidContext()) }
+    viewModel { ProfileViewModel(get(), get(), get(), get(), get(), get(), get(), get(), get(), get()) }
 
     // Home
     single<ActivityRepository> { ActivityRepositoryImpl(get()) }
