@@ -5,6 +5,7 @@ import com.hlasoftware.focus.features.posts.domain.usecase.CreatePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.DeletePostUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.GetPostsUseCase
 import com.hlasoftware.focus.features.posts.domain.usecase.UpdatePostUseCase
+import com.hlasoftware.focus.features.profile.data.repository.LanguageRepository
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.profile.domain.usecase.DeleteAccountUseCase
 import com.hlasoftware.focus.features.profile.domain.usecase.GetProfileUseCase
@@ -40,6 +41,7 @@ class ProfileViewModelTest {
     private val deletePostUseCase: DeletePostUseCase = mock()
     private val deleteAccountUseCase: DeleteAccountUseCase = mock()
     private val routineRepository: RoutineRepository = mock()
+    private val languageRepository: LanguageRepository = mock()
 
     @Before
     fun setUp() {
@@ -53,7 +55,8 @@ class ProfileViewModelTest {
             updatePostUseCase,
             deletePostUseCase,
             deleteAccountUseCase,
-            routineRepository
+            routineRepository,
+            languageRepository
         )
     }
 
