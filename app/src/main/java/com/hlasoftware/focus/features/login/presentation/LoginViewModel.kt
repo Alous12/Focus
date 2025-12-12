@@ -2,9 +2,10 @@ package com.hlasoftware.focus.features.login.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hlasoftware.focus.features.login.domain.model.Email
 import com.hlasoftware.focus.features.login.domain.model.UserModel
-import com.hlasoftware.focus.features.login.domain.usecase.LoginUseCase
 import com.hlasoftware.focus.features.login.domain.usecase.GoogleSignInUseCase
+import com.hlasoftware.focus.features.login.domain.usecase.LoginUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,17 +13,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
-    val email: String = "",
+    val rawEmail: String = "",
+    val email: Email? = null,
     val password: String = "",
     val loading: Boolean = false,
     val error: String? = null,
     val user: UserModel? = null,
-    val success: Boolean = false
+    val success: Boolean = false,
 )
 
 class LoginViewModel(
     private val loginUseCase: LoginUseCase,
-    private val googleSignInUseCase: GoogleSignInUseCase
+    private val googleSignInUseCase: GoogleSignInUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -31,7 +33,16 @@ class LoginViewModel(
     private var errorJob: Job? = null
 
     fun onEmailChanged(email: String) {
-        _uiState.value = _uiState.value.copy(email = email.filter { it != '\n' }, error = null)
+        val emailSanitized = email.filter { it != '\n' }
+        try {
+            _uiState.value = _uiState.value.copy(
+                rawEmail = emailSanitized,
+                email = Email.create(emailSanitized),
+                error = null
+            )
+        } catch (e: IllegalArgumentException) {
+            _uiState.value = _uiState.value.copy(rawEmail = emailSanitized, email = null, error = e.message)
+        }
     }
 
     fun onPasswordChanged(password: String) {
@@ -40,7 +51,10 @@ class LoginViewModel(
         if (password.length <= 20) {
             _uiState.value = _uiState.value.copy(password = password, error = null)
         } else {
-            _uiState.value = _uiState.value.copy(password = password, error = "La contraseña no puede exceder los 20 caracteres.")
+            _uiState.value = _uiState.value.copy(
+                password = password,
+                error = "La contraseña no puede exceder los 20 caracteres."
+            )
             errorJob = viewModelScope.launch {
                 delay(2000) // Espera 2 segundos
                 if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
@@ -52,8 +66,12 @@ class LoginViewModel(
 
     fun login() {
         val current = _uiState.value
+        if (current.email == null) {
+            _uiState.value = current.copy(error = "Email con formato invalido")
+            return
+        }
 
-        if (current.email.isBlank() || current.password.isBlank()) {
+        if (current.password.isBlank()) {
             _uiState.value = current.copy(error = "Completa email y contraseña")
             return
         }
@@ -61,7 +79,7 @@ class LoginViewModel(
         viewModelScope.launch {
             _uiState.value = current.copy(loading = true, error = null)
             try {
-                val user = loginUseCase(current.email, current.password)
+                val user = loginUseCase(current.email.value, current.password)
                 _uiState.value = _uiState.value.copy(
                     loading = false,
                     user = user,

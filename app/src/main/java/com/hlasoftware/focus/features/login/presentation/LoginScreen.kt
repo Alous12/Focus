@@ -94,7 +94,7 @@ fun LoginScreen(
             )
 
             TextField(
-                value = uiState.email,
+                value = uiState.rawEmail,
                 onValueChange = vm::onEmailChanged,
                 label = { Text(stringResource(id = R.string.login_email_label), color = colorResource(id = R.color.login_label_gray), fontSize = 16.sp) },
                 singleLine = true,

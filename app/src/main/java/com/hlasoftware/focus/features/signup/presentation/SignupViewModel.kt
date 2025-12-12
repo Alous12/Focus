@@ -2,10 +2,11 @@ package com.hlasoftware.focus.features.signup.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hlasoftware.focus.features.login.domain.model.Email
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.signup.domain.model.SignUpModel
-import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
 import com.hlasoftware.focus.features.signup.domain.usecase.GoogleSignUpUseCase
+import com.hlasoftware.focus.features.signup.domain.usecase.SignUpUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,18 +16,19 @@ import kotlinx.coroutines.launch
 data class SignUpUiState(
     val name: String = "",
     val birthdate: String = "",
-    val email: String = "",
+    val rawEmail: String = "",
+    val email: Email? = null,
     val password: String = "",
     val confirmPassword: String = "",
     val loading: Boolean = false,
     val success: Boolean = false,
     val error: String? = null,
-    val user: ProfileModel? = null
+    val user: ProfileModel? = null,
 )
 
 class SignUpViewModel(
     private val signUpUseCase: SignUpUseCase,
-    private val googleSignUpUseCase: GoogleSignUpUseCase
+    private val googleSignUpUseCase: GoogleSignUpUseCase,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpUiState())
@@ -43,7 +45,16 @@ class SignUpViewModel(
     }
 
     fun onEmailChanged(email: String) {
-        _uiState.value = _uiState.value.copy(email = email.filter { it != '\n' }, error = null)
+        val emailSanitized = email.filter { it != '\n' }
+        try {
+            _uiState.value = _uiState.value.copy(
+                rawEmail = emailSanitized,
+                email = Email.create(emailSanitized),
+                error = null
+            )
+        } catch (e: IllegalArgumentException) {
+            _uiState.value = _uiState.value.copy(rawEmail = emailSanitized, email = null, error = e.message)
+        }
     }
 
     fun onPasswordChanged(password: String) {
@@ -52,7 +63,10 @@ class SignUpViewModel(
         if (password.length <= 20) {
             _uiState.value = _uiState.value.copy(password = password, error = null)
         } else {
-            _uiState.value = _uiState.value.copy(password = password, error = "La contraseña no puede exceder los 20 caracteres.")
+            _uiState.value = _uiState.value.copy(
+                password = password,
+                error = "La contraseña no puede exceder los 20 caracteres."
+            )
             errorJob = viewModelScope.launch {
                 delay(2000)
                 if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
@@ -68,7 +82,10 @@ class SignUpViewModel(
         if (confirm.length <= 20) {
             _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = null)
         } else {
-            _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = "La contraseña no puede exceder los 20 caracteres.")
+            _uiState.value = _uiState.value.copy(
+                confirmPassword = confirm,
+                error = "La contraseña no puede exceder los 20 caracteres."
+            )
             errorJob = viewModelScope.launch {
                 delay(2000)
                 if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
@@ -109,19 +126,16 @@ class SignUpViewModel(
     fun onSignUpClick() {
         val current = _uiState.value
 
-        if (
-            current.name.isBlank() ||
+        if (current.name.isBlank() ||
             current.birthdate.isBlank() ||
-            current.email.isBlank() ||
             current.password.isBlank() ||
             current.confirmPassword.isBlank()
         ) {
             _uiState.value = current.copy(error = "Todos los campos son obligatorios")
             return
         }
-
-        if (!current.email.contains("@")) {
-            _uiState.value = current.copy(error = "Email no válido")
+        if (current.email == null) {
+            _uiState.value = current.copy(error = "Email con formato invalido")
             return
         }
 
@@ -142,7 +156,7 @@ class SignUpViewModel(
                 val params = SignUpModel(
                     name = current.name,
                     birthdate = current.birthdate,
-                    email = current.email,
+                    email = current.email.value,
                     password = current.password,
                     confirmPassword = current.confirmPassword
                 )
