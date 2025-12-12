@@ -100,14 +100,13 @@ fun HomeScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            Text(
-                text = stringResource(id = R.string.home_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = colorResource(id = R.color.title_color),
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .fillMaxWidth()
+            TopAppBar(
+                title = { Text(stringResource(id = R.string.home_title), style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colorResource(id = R.color.title_color)) }
             )
+
+
             Spacer(modifier = Modifier.height(16.dp))
 
             DateSelector(

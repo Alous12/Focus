@@ -85,9 +85,9 @@ fun RoutinesScreen(
                 title = {
                     Text(
                         "Rutinas",
-                        fontSize = 22.sp,
+                        style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = colorResource(id = R.color.title_color)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
