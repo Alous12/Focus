@@ -154,7 +154,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = uiState.password,
+                value = uiState.rawPassword,
                 onValueChange = viewModel::onPasswordChanged,
                 label = lineLabelStyle(stringResource(id = R.string.signup_password_label)),
                 singleLine = true,
@@ -175,7 +175,7 @@ fun SignUpScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextField(
-                value = uiState.confirmPassword,
+                value = uiState.rawConfirmPassword,
                 onValueChange = viewModel::onConfirmPasswordChanged,
                 label = lineLabelStyle(stringResource(id = R.string.signup_confirm_password_label)),
                 singleLine = true,
@@ -204,7 +204,7 @@ fun SignUpScreen(
 
             Button(
                 onClick = { viewModel.onSignUpClick() },
-                enabled = !uiState.loading && uiState.name.isNotBlank() && uiState.rawEmail.isNotBlank() && uiState.password.isNotBlank() && uiState.confirmPassword.isNotBlank(),
+                enabled = !uiState.loading && uiState.name.isNotBlank() && uiState.rawEmail.isNotBlank() && uiState.rawPassword.isNotBlank() && uiState.rawConfirmPassword.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

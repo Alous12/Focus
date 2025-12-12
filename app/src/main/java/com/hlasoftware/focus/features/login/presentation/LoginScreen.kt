@@ -113,7 +113,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             TextField(
-                value = uiState.password,
+                value = uiState.rawPassword,
                 onValueChange = vm::onPasswordChanged,
                 label = { Text(stringResource(id = R.string.login_password_label), color = colorResource(id = R.color.login_label_gray), fontSize = 16.sp) },
                 singleLine = true,

@@ -1,21 +1,20 @@
 package com.hlasoftware.focus.features.login.domain.model
 
-//    CALYR.software@gmail.com OK  Calyr.software@gmail.com OK  calyr.software@gmail.com
-//    calyr.software@gmail.com     calyr.software@gmail.com
-// [         calyr.     software@#__-=..com       ]
-//     a@a.a
 @JvmInline
 value class Email private constructor(val value: String) {
 
     companion object {
         fun create(raw: String): Email {
             require(raw.isNotEmpty()) {
-                "Email must not be empty"
+                "Email no puede estar vacio"
             }
 
             val normalized = raw.trim().lowercase()
-            require(raw.contains("@")) {
-                "Email must contain '@'"
+            require(normalized.contains("@")) {
+                "Email debe contener '@'"
+            }
+            require(normalized.endsWith(".com")) {
+                "Email debe terminar '.com'"
             }
 
             return Email(normalized)

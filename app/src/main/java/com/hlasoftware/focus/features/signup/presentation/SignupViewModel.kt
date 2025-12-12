@@ -3,6 +3,7 @@ package com.hlasoftware.focus.features.signup.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hlasoftware.focus.features.login.domain.model.Email
+import com.hlasoftware.focus.features.login.domain.model.Password
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
 import com.hlasoftware.focus.features.signup.domain.model.SignUpModel
 import com.hlasoftware.focus.features.signup.domain.usecase.GoogleSignUpUseCase
@@ -18,8 +19,9 @@ data class SignUpUiState(
     val birthdate: String = "",
     val rawEmail: String = "",
     val email: Email? = null,
-    val password: String = "",
-    val confirmPassword: String = "",
+    val rawPassword: String = "",
+    val password: Password? = null,
+    val rawConfirmPassword: String = "",
     val loading: Boolean = false,
     val success: Boolean = false,
     val error: String? = null,
@@ -58,41 +60,19 @@ class SignUpViewModel(
     }
 
     fun onPasswordChanged(password: String) {
-        errorJob?.cancel()
-
-        if (password.length <= 20) {
-            _uiState.value = _uiState.value.copy(password = password, error = null)
-        } else {
+        try {
             _uiState.value = _uiState.value.copy(
-                password = password,
-                error = "La contraseña no puede exceder los 20 caracteres."
+                rawPassword = password,
+                password = Password.create(password),
+                error = null
             )
-            errorJob = viewModelScope.launch {
-                delay(2000)
-                if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
-                    _uiState.value = _uiState.value.copy(error = null)
-                }
-            }
+        } catch (e: IllegalArgumentException) {
+            _uiState.value = _uiState.value.copy(rawPassword = password, password = null, error = e.message)
         }
     }
 
     fun onConfirmPasswordChanged(confirm: String) {
-        errorJob?.cancel()
-
-        if (confirm.length <= 20) {
-            _uiState.value = _uiState.value.copy(confirmPassword = confirm, error = null)
-        } else {
-            _uiState.value = _uiState.value.copy(
-                confirmPassword = confirm,
-                error = "La contraseña no puede exceder los 20 caracteres."
-            )
-            errorJob = viewModelScope.launch {
-                delay(2000)
-                if (_uiState.value.error == "La contraseña no puede exceder los 20 caracteres.") {
-                    _uiState.value = _uiState.value.copy(error = null)
-                }
-            }
-        }
+        _uiState.value = _uiState.value.copy(rawConfirmPassword = confirm, error = null)
     }
 
     fun onGoogleSignIn(token: String) {
@@ -126,25 +106,22 @@ class SignUpViewModel(
     fun onSignUpClick() {
         val current = _uiState.value
 
-        if (current.name.isBlank() ||
-            current.birthdate.isBlank() ||
-            current.password.isBlank() ||
-            current.confirmPassword.isBlank()
-        ) {
+        if (current.name.isBlank() || current.birthdate.isBlank()) {
             _uiState.value = current.copy(error = "Todos los campos son obligatorios")
             return
         }
+
         if (current.email == null) {
-            _uiState.value = current.copy(error = "Email con formato invalido")
+            _uiState.value = current.copy(error = current.error ?: "Email con formato invalido")
             return
         }
 
-        if (current.password.length < 6) {
-            _uiState.value = current.copy(error = "La contraseña debe tener al menos 6 caracteres")
+        if (current.password == null) {
+            _uiState.value = current.copy(error = current.error ?: "Contraseña con formato invalido")
             return
         }
 
-        if (current.password != current.confirmPassword) {
+        if (current.password.value != current.rawConfirmPassword) {
             _uiState.value = current.copy(error = "Las contraseñas no coinciden")
             return
         }
@@ -157,8 +134,8 @@ class SignUpViewModel(
                     name = current.name,
                     birthdate = current.birthdate,
                     email = current.email.value,
-                    password = current.password,
-                    confirmPassword = current.confirmPassword
+                    password = current.password.value,
+                    confirmPassword = current.rawConfirmPassword
                 )
 
                 val profile: ProfileModel = signUpUseCase(params)
