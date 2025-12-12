@@ -15,7 +15,7 @@ class SignUpRepositoryImpl(
 
     override suspend fun signUp(params: SignUpModel): ProfileModel {
         val authResult = auth
-            .createUserWithEmailAndPassword(params.email.trim(), params.password)
+            .createUserWithEmailAndPassword(params.email.value, params.password.value)
             .await()
 
         val uid = authResult.user?.uid
@@ -23,8 +23,8 @@ class SignUpRepositoryImpl(
 
         val profile = ProfileModel(
             uid = uid,
-            email = params.email.trim(),
-            name = params.name.trim(),
+            email = params.email.value,
+            name = params.name.value, // Corregido: usar .value
             birthdate = params.birthdate,
             createdAt = System.currentTimeMillis(),
             pathUrl = "",

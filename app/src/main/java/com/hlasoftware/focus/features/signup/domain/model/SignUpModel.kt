@@ -1,10 +1,12 @@
 package com.hlasoftware.focus.features.signup.domain.model
 
-data class SignUpModel(
-    val name: String,
-    val birthdate: String,
-    val email: String,
-    val password: String,
-    val confirmPassword: String
+import com.hlasoftware.focus.core.domain.model.NonEmptyString
+import com.hlasoftware.focus.features.login.domain.model.Email
+import com.hlasoftware.focus.features.login.domain.model.Password
 
+data class SignUpModel(
+    val name: NonEmptyString,
+    val birthdate: String,
+    val email: Email,
+    val password: Password,
 )

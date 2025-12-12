@@ -92,7 +92,7 @@
     <string name="add_member_success_message">Miembro(s) agregado(s) con éxito</string>
     <!-- LoginScreen -->
     <string name="login_title">Inicia Sesión</string>
-    <string name="login_email_label">Ingresa tu número o correo electrónico</string>
+    <string name="login_email_label">Ingresa tu correo electrónico</string>
     <string name="login_password_label">Ingresa tu contraseña</string>
     <string name="login_forgot_password">¿Olvidaste tu contraseña?</string>
     <string name="login_button">Inicia Sesión</string>
@@ -113,7 +113,7 @@
     <string name="signup_name_label">Ingresa tu nombre completo</string>
     <string name="signup_birthdate_label">Ingresa tu fecha de nacimiento</string>
     <string name="signup_select_date_button">Seleccionar fecha</string>
-    <string name="signup_email_label">Ingresa tu número o correo electrónico</string>
+    <string name="signup_email_label">Ingresa tu correo electrónico</string>
     <string name="signup_password_label">Ingresa tu contraseña</string>
     <string name="signup_confirm_password_label">Confirma tu contraseña</string>
     <string name="signup_toggle_password_visibility">Alternar visibilidad de contraseña</string>

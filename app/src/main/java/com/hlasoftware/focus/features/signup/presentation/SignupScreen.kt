@@ -112,7 +112,7 @@ fun SignUpScreen(
             }
 
             TextField(
-                value = uiState.name,
+                value = uiState.rawName,
                 onValueChange = viewModel::onNameChanged,
                 label = lineLabelStyle(stringResource(id = R.string.signup_name_label)),
                 singleLine = true,
@@ -204,7 +204,7 @@ fun SignUpScreen(
 
             Button(
                 onClick = { viewModel.onSignUpClick() },
-                enabled = !uiState.loading && uiState.name.isNotBlank() && uiState.rawEmail.isNotBlank() && uiState.rawPassword.isNotBlank() && uiState.rawConfirmPassword.isNotBlank(),
+                enabled = !uiState.loading && uiState.rawName.isNotBlank() && uiState.rawEmail.isNotBlank() && uiState.rawPassword.isNotBlank() && uiState.rawConfirmPassword.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)

@@ -2,6 +2,7 @@ package com.hlasoftware.focus.features.signup.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hlasoftware.focus.core.domain.model.NonEmptyString
 import com.hlasoftware.focus.features.login.domain.model.Email
 import com.hlasoftware.focus.features.login.domain.model.Password
 import com.hlasoftware.focus.features.profile.domain.model.ProfileModel
@@ -15,7 +16,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class SignUpUiState(
-    val name: String = "",
+    val rawName: String = "",
+    val name: NonEmptyString? = null,
     val birthdate: String = "",
     val rawEmail: String = "",
     val email: Email? = null,
@@ -39,7 +41,15 @@ class SignUpViewModel(
     private var errorJob: Job? = null
 
     fun onNameChanged(name: String) {
-        _uiState.value = _uiState.value.copy(name = name, error = null)
+        try {
+            _uiState.value = _uiState.value.copy(
+                rawName = name,
+                name = NonEmptyString.create(name),
+                error = null
+            )
+        } catch (e: IllegalArgumentException) {
+            _uiState.value = _uiState.value.copy(rawName = name, name = null, error = e.message)
+        }
     }
 
     fun onBirthdateChanged(birthdate: String) {
@@ -106,8 +116,13 @@ class SignUpViewModel(
     fun onSignUpClick() {
         val current = _uiState.value
 
-        if (current.name.isBlank() || current.birthdate.isBlank()) {
+        if (current.birthdate.isBlank()) { // name is checked below
             _uiState.value = current.copy(error = "Todos los campos son obligatorios")
+            return
+        }
+
+        if (current.name == null) {
+            _uiState.value = current.copy(error = current.error ?: "El nombre no puede estar vacío")
             return
         }
 
@@ -131,11 +146,10 @@ class SignUpViewModel(
 
             try {
                 val params = SignUpModel(
-                    name = current.name,
+                    name = current.name, // Pass the NonEmptyString object
                     birthdate = current.birthdate,
-                    email = current.email.value,
-                    password = current.password.value,
-                    confirmPassword = current.rawConfirmPassword
+                    email = current.email,
+                    password = current.password
                 )
 
                 val profile: ProfileModel = signUpUseCase(params)

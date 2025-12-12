@@ -145,13 +145,7 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = onForgotPasswordClicked, contentPadding = PaddingValues(0.dp)) {
-                    Text(
-                        stringResource(id = R.string.login_forgot_password),
-                        color = colorResource(id = R.color.login_forgot_password_gray),
-                        fontSize = 14.sp
-                    )
-                }
+
             }
 
             Spacer(modifier = Modifier.height(32.dp))

@@ -92,7 +92,7 @@
     <string name="add_member_success_message">Member(s) added successfully</string>
     <!-- LoginScreen -->
     <string name="login_title">Log In</string>
-    <string name="login_email_label">Enter your number or email</string>
+    <string name="login_email_label">Enter your email</string>
     <string name="login_password_label">Enter your password</string>
     <string name="login_forgot_password">Forgot your password?</string>
     <string name="login_button">Log In</string>
@@ -113,7 +113,7 @@
     <string name="signup_name_label">Enter your full name</string>
     <string name="signup_birthdate_label">Enter your birthdate</string>
     <string name="signup_select_date_button">Select date</string>
-    <string name="signup_email_label">Enter your number or email</string>
+    <string name="signup_email_label">Enter your email</string>
     <string name="signup_password_label">Enter your password</string>
     <string name="signup_confirm_password_label">Confirm your password</string>
     <string name="signup_toggle_password_visibility">Toggle password visibility</string>

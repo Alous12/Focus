@@ -8,9 +8,6 @@ class SignUpUseCase(
     private val repo: SignUpRepository
 ) {
     suspend operator fun invoke(params: SignUpModel): ProfileModel {
-        require(params.email.isNotBlank()) { "El correo es requerido." }
-        require(params.password.length >= 6) { "La contraseña debe tener al menos 6 caracteres." }
-
         return repo.signUp(params)
     }
 }
