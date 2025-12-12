@@ -99,7 +99,7 @@ fun RoutinesScreen(
             FloatingActionButton(
                 onClick = onAddRoutine,
                 containerColor = MaterialTheme.colorScheme.primary,
-                shape = CircleShape
+                //shape = CircleShape
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
